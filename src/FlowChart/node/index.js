@@ -20,13 +20,11 @@ const getNodeDefinition = type => {
      * 关于 keyShape 可参考文档 核心概念-节点/边/Combo-图形 Shape 与 keyShape
      */
     draw(cfg, group) {
-      const { name, x, y } = cfg
+      const { name } = cfg
       
       const _cfg = {
         attrs: {
           ...this.options.style,
-          x,
-          y
         },
         name,
       }
@@ -91,7 +89,7 @@ const getNodeDefinition = type => {
     // 添加锚点上的node
     addAnchorPointNodes(cfg, group) {
       const { style, name } = anchorPointNodeOptions
-      const { x: flowBlockX, y: flowBlockY, id } = cfg
+      const { id } = cfg
       const { width, height } = this.options.style
       const anchorPoints = this.getAnchorPoints(cfg)
   
@@ -101,8 +99,8 @@ const getNodeDefinition = type => {
       })
   
       anchorPoints.forEach(([xPercentage, yPercentage], index) => {
-        const x = flowBlockX + xPercentage * width
-        const y = flowBlockY + yPercentage * height
+        const x = xPercentage * width
+        const y = yPercentage * height
   
         const _cfg = {
           attrs: {

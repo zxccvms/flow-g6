@@ -3,7 +3,7 @@ import { FlowBlockType, OtherNodeType, AnchorPointType } from '../index.d.ts'
 
 
 // 流程块节点公共的配置
-const flowBlockPublicOptions = {
+export const flowBlockPublicOptions = {
   style: {
     width: 100,
     height: 40,

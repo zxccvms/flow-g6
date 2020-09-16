@@ -41,23 +41,17 @@ const data = {
     source: 'node1',
     sourceAnchor: 0,
     target: 'node0',
-    targetAnchor: 0
+    targetAnchor: 0,
   }, {
     id: 2,
     type: 'sz-edge',
     source: 'node0',
     sourceAnchor: 3,
     target: 'node3',
-    targetAnchor: 0
-  }, {
-    id: 3,
-    type: 'sz-edge',
-    source: 'node0',
-    sourceAnchor: 2,
-    target: 'node2',
-    targetAnchor: 0
+    targetAnchor: 0,
   }]
 }
+
 
 const FlowChart = () => {
   const graph = useRef(null)
@@ -72,7 +66,12 @@ const FlowChart = () => {
       },
       plugins: [grid], // 插件
       layout: {
-        type: 'sz-layout',
+        type: 'dagre',
+        rankdir: 'TB', // 可选，默认为图的中心
+        // align: 'DL', // 可选
+        nodesep: 100, // 可选
+        ranksep: 20, // 可选
+        controlPoints: true, // 可选
       },
     });
     

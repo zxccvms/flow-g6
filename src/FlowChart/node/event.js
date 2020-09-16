@@ -29,13 +29,13 @@ G6.registerBehavior('flow-block-event', {
     const { x, y } = e
     const graph = this.graph
 
-    // const node = graph.addItem('node', {
-    //   id: Math.random() * 1000,
-    //   name: 'sz-task',
-    //   type: 'sz-task',
-    //   x: 400,
-    //   y: 10
-    // })
+    const node = graph.addItem('node', {
+      id: Math.random() * 1000,
+      name: 'sz-task',
+      type: 'sz-task',
+      x: x,
+      y: y
+    })
   },
 
   onAfterAddNode(item, model) {
@@ -57,6 +57,7 @@ G6.registerBehavior('flow-block-event', {
 
 
   onCanvasClick(e) {
+    console.log(e.x, e.y)
     this.removeFlowBlockNodeSelectedState()
   },
   onNodeClick(e) {
