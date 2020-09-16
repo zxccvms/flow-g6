@@ -5,8 +5,18 @@ export enum FlowBlockType{
   Judge = 'sz-judeg'
 }
 
-export enum OtherNodeType{
-  AnchorPointNode = 'anchor-point-node'
+export enum ShapeName{
+  FlowBlockShape = 'flow-block-shape',
+  AnchorPointShape = 'anchor-point-shape',
+  TextShape = 'text-shape',
+  IconShape = 'icon-shape',
+  EditorShape = 'editor-shape',
+  DeleteShape = 'delete-shape'
+}
+
+export enum GroupName{
+  AnchorPointGroup = 'anchor-point-group',
+  utilShapeGroup = 'anchor-point-group',
 }
 
 export enum AnchorPointType{

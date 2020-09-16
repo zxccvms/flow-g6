@@ -14,25 +14,21 @@ const data = {
     id: 'node0',
     x: 10,
     y: 10,
-    name: 'sz-task',
     type: 'sz-task',
   },{
     id: 'node1',
     x: 100,
     y: 10,
-    name: 'sz-start',
     type: 'sz-start',
   },{
     id: 'node2',
     x: 200,
     y: 10,
-    name: 'sz-end',
     type: 'sz-end',
   },{
     id: 'node3',
     x: 300,
     y: 10,
-    name: 'sz-judeg',
     type: 'sz-judeg',
     }],
   edges: [{
@@ -69,7 +65,7 @@ const FlowChart = () => {
         type: 'dagre',
         rankdir: 'TB', // 可选，默认为图的中心
         // align: 'DL', // 可选
-        nodesep: 100, // 可选
+        nodesep: 50, // 可选
         ranksep: 20, // 可选
         controlPoints: true, // 可选
       },
@@ -79,10 +75,15 @@ const FlowChart = () => {
     graph.current.data(data);
     graph.current.render();
 
+    // 兼容icon渲染失败
+    // setTimeout(() => {
+    //   graph.current.paint();
+    // }, 16);
+
     // 更新布局参数
-    graph.current.updateLayout({
-      graph:graph.current
-    })
+    // graph.current.updateLayout({
+    //   graph:graph.current
+    // })
   }, [graph])
   
 

@@ -1,2 +1,13 @@
-#container{
+.container-wrap{
+  position: relative;
+  background-color: #666;
+}
+
+#container canvas {
+  position: relative;
+  z-index: 1 !important;
+}
+
+.g6-grid-container{
+  z-index: 0 !important;
 }

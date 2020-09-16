@@ -1,5 +1,5 @@
 import G6 from '@antv/g6';
-import { OtherNodeType } from '../index.d.ts'
+import { ShapeName } from '../index.d.ts'
 
 G6.registerBehavior('flow-block-event', {
   getDefaultCfg() {
@@ -57,7 +57,6 @@ G6.registerBehavior('flow-block-event', {
 
 
   onCanvasClick(e) {
-    console.log(e.x, e.y)
     this.removeFlowBlockNodeSelectedState()
   },
   onNodeClick(e) {
@@ -120,7 +119,7 @@ G6.registerBehavior('flow-block-event', {
     const { item, target, x, y } = e;
     const { attrs, cfg } = target
     // 不是锚点上的节点
-    if (cfg.name !== OtherNodeType.AnchorPointNode) return 
+    if (cfg.name !== ShapeName.AnchorPointShape) return 
     
     const { flowBlockId, anchorPointIndex } = attrs
 
