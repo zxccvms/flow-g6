@@ -8,16 +8,19 @@ export const flowBlockPublicOptions = {
     width: 140,
     height: 40,
     fill: '#FFFFFF',
-    lineWidth: 2,
+    stroke: '#FFFFFF',
+    lineWidth: 1,
     cursor: 'pointer',
     radius: [8,8,8,8]
   },
   stateStyles: {
     hover: {
-      fill: '#4D7CFE'
+      fill: '#4D7CFE',
+      stroke: '#376DFF'
     },
     selected: {
-      fill: '#4D7CFE'
+      fill: '#4D7CFE',
+      stroke: '#376DFF'
     },
   }
 }
@@ -160,7 +163,7 @@ export const textShapeOptions = {
     fontWeight: 400,
     textBaseline: 'middle',
     x: 44,
-    y: 22,
+    y: 20,
     cursor: 'point'
   },
   stateStyles: {
@@ -177,14 +180,23 @@ export const textShapeOptions = {
 export const utilShapesOptionsMap = {
   [ShapeName.EditorShape]: {
     name: ShapeName.EditorShape,
-    icon: '\ue704',
+    iconShape: {
+      style: {
+        text:'\ue704',
+        fontFamily: 'iconfont',
+        fill: '#376DFF',
+        fontSize: 16,
+        fontWeight: 400,
+        textBaseline: 'middle',
+        cursor: 'pointer'
+      }
+    },
     style: {
-      r: 0,
+      r: 12,
       x: 140 + 8 + 12,
       y: 20,
       fill: '#fff',
-      stroke: '#6B7799',
-      cursor: 'point'
+      cursor: 'pointer'
     },
     stateStyles: {
       hover: {
@@ -197,14 +209,23 @@ export const utilShapesOptionsMap = {
   },
   [ShapeName.DeleteShape]: {
     name: ShapeName.DeleteShape,
-    icon: '\ue79a',
+    iconShape: {
+      style: {
+        text:'\ue79a',
+        fontFamily: 'iconfont',
+        fill: '#FF493D',
+        fontSize: 16,
+        fontWeight: 400,
+        textBaseline: 'middle',
+        cursor: 'pointer'
+      }
+    },
     style: {
-      r: 0,
-      x: 140 + 38 + 12,
+      r: 12,
+      x: 140 + 8 + 12,
       y: 20,
       fill: '#fff',
-      stroke: '#6B7799',
-      cursor: 'point'
+      cursor: 'pointer'
     },
     stateStyles: {
       hover: {
@@ -216,3 +237,4 @@ export const utilShapesOptionsMap = {
     },
   }
 }
+

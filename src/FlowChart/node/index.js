@@ -10,7 +10,8 @@ import {
 import {
   FlowBlockType,
   GroupName,
-  ShapeName
+  ShapeName,
+  UtilGroupChildrenName
 } from '../index.d.ts'
 
 import './event'
@@ -26,6 +27,7 @@ const getNodeDefinition = type => {
      * 关于 keyShape 可参考文档 核心概念-节点/边/Combo-图形 Shape 与 keyShape
      */
     draw(cfg, group) {
+    console.log("draw -> group", group)
       
       const _cfg = {
         attrs: {
@@ -38,30 +40,13 @@ const getNodeDefinition = type => {
   
       return keyShape
     },
-    /**
-     * 绘制后的附加操作，默认没有任何操作
-     * @param  {Object} cfg 节点的配置项
-     * @param  {G.Group} group 图形分组，节点中图形对象的容器
-     */
     afterDraw(cfg, group) {
       this.addAnchorPointShapes(cfg, group)
       this.addIconShape(cfg, group)
       this.addTextShape(cfg, group)
       this.addUtilShapes(cfg, group)
     },
-    /**
-     * 更新节点，包含文本
-     * @override
-     * @param  {Object} cfg 节点的配置项
-     * @param  {Node} node 节点
-     */
     update(cfg, node) {},
-    /**
-     * 更新节点后的操作，一般同 afterDraw 配合使用
-     * @override
-     * @param  {Object} cfg 节点的配置项
-     * @param  {Node} node 节点
-     */
     afterUpdate(cfg, node) {},
     
     setState(state, value, item) {
@@ -88,20 +73,16 @@ const getNodeDefinition = type => {
       const { stateStyles: textStateStyles, style: textStyle} = textShapeOptions
       
       const group = item.getContainer()
-      const [keyShape, anchorPointGroup, iconShape, textShape, utilShapeGroup] = group.getChildren()
+      const [keyShape, anchorPointGroup, iconShape, textShape, utilGroup] = group.getChildren()
       const anchorPointShapes = anchorPointGroup.getChildren()
-      const utilShapes = utilShapeGroup.getChildren()
   
       keyShape.attr(value ? stateStyles[state] : style)
       anchorPointShapes.forEach(shape => shape.attr(value ? anchorStateStyles[state] : anchorStyle))
       iconShape.attr(value ? iconStateStyles[state] : iconStyle)
       textShape.attr(value ? textStateStyles[state] : textStyle)
-      utilShapes.forEach(shape => {
-        if(shape.cfg.name === ShapeName.IconShape) return
-        const { stateStyles, style } = utilShapesOptionsMap[shape.cfg.name]
-
-        shape.attr(value ? stateStyles[state] : style)
-      })
+      if (state === 'selected') {
+        utilGroup[value ? 'show' : 'hide']()
+      }
     },
     
     /**
@@ -133,7 +114,8 @@ const getNodeDefinition = type => {
             x,
             y,
             flowBlockId: id,
-            anchorPointIndex: index
+            anchorPointIndex: index,
+            anchorPointType: this.options.anchorPointsType[index]
           },
           name,
         }
@@ -185,40 +167,52 @@ const getNodeDefinition = type => {
       const { id } = cfg
 
       const utilShapeGroup = group.addGroup({
-        id: `${id}-${GroupName.UtilShapesGroup}`,
-        name: GroupName.UtilShapesGroup
+        id: `${id}-${GroupName.UtilGroup}`,
+        name: GroupName.UtilGroup
       })
 
-      for (const shapeName in utilShapesOptionsMap) {
-        const { style, name, icon } = utilShapesOptionsMap[shapeName]
-        const { x, y, r } = style
+      utilShapeGroup.hide()
+
+      for(const groupKey in UtilGroupChildrenName) {
+        const groupName = UtilGroupChildrenName[groupKey]
+        
+        if (groupName === UtilGroupChildrenName.EditorShape && type !== FlowBlockType.Task) continue
+
+        const { length } = utilShapeGroup.getChildren()
+        
+        const shapeGroup = utilShapeGroup.addGroup({
+          id: `${id}-${groupName}`,
+          name: groupName,
+        })
+
+        const shapeName = ShapeName[groupKey]// groupKey 在定义的时候和ShapeName的 key 相同
+        const { style, name, iconShape } = utilShapesOptionsMap[shapeName] 
+        const { x, y } = style
+        const { style: iconStyle } = iconShape
+        
+        const realX = x + length * 30
     
         const circleCfg = {
           attrs: {
             ...style,
             flowBlockId: id,
+            x: realX
           },
           name,
         }
   
-        utilShapeGroup.addShape('circle', circleCfg)
+        shapeGroup.addShape('circle', circleCfg)
 
         const iconCfg = {
           attrs: {
-            text: icon,
-            fontFamily: 'iconfont',
-            fill: '#376DFF',
-            fontSize: 16,
-            fontWeight: 400,
-            textBaseline: 'middle',
-            x: x - r + 4,
+            ...iconStyle,
+            x: realX - iconStyle.fontSize / 2,
             y: y,
-            cursor: 'point'
           },
           name: ShapeName.IconShape
         }
 
-        utilShapeGroup.addShape('text', iconCfg)
+        shapeGroup.addShape('text', iconCfg)
       }
     }
 

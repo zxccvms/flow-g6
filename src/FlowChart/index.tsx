@@ -31,14 +31,16 @@ const data = {
     y: 10,
     type: 'sz-judeg',
     }],
-  edges: [{
-    id: 1,
-    type: 'sz-edge',
-    source: 'node1',
-    sourceAnchor: 0,
-    target: 'node0',
-    targetAnchor: 0,
-  }, {
+  edges: [
+    // {
+    // id: 1,
+    // type: 'sz-edge',
+    // source: 'node1',
+    // sourceAnchor: 0,
+    // target: 'node0',
+    // targetAnchor: 0,
+    // },
+    {
     id: 2,
     type: 'sz-edge',
     source: 'node0',
@@ -65,7 +67,7 @@ const FlowChart = () => {
         type: 'dagre',
         rankdir: 'TB', // 可选，默认为图的中心
         // align: 'DL', // 可选
-        nodesep: 50, // 可选
+        nodesep: 60, // 可选
         ranksep: 20, // 可选
         controlPoints: true, // 可选
       },
@@ -88,7 +90,7 @@ const FlowChart = () => {
   
 
   return <div id="container" ref={container}>
-    <div onClick={() => graph.current.layout()}>布局</div>
+    <button className="layout-init-btn" onClick={() => graph.current.layout()}>布局</button>
   </div>
 }
 

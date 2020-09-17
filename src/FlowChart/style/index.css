@@ -1,6 +1,6 @@
 .container-wrap{
   position: relative;
-  background-color: #666;
+  background-color: #eee;
 }
 
 #container canvas {
@@ -10,4 +10,11 @@
 
 .g6-grid-container{
   z-index: 0 !important;
+}
+
+.layout-init-btn{
+  position: absolute;
+
+  top: 100px;
+  left: 100px;
 }

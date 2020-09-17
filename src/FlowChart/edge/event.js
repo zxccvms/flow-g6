@@ -8,8 +8,11 @@ G6.registerBehavior('edge-event', {
   },
   getEvents() {
     return {
-
+      'edge:mouseenter': 'onEdgeMouseEnter'
     };
   },
-  
+
+  onEdgeMouseEnter(e) {
+    console.log("onEdgeMouseEnter -> e", e)
+  }
 });

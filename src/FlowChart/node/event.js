@@ -1,5 +1,5 @@
 import G6 from '@antv/g6';
-import { ShapeName } from '../index.d.ts'
+import { ShapeName, AnchorPointType } from '../index.d.ts'
 
 G6.registerBehavior('flow-block-event', {
   getDefaultCfg() {
@@ -30,8 +30,7 @@ G6.registerBehavior('flow-block-event', {
     const graph = this.graph
 
     const node = graph.addItem('node', {
-      id: Math.random() * 1000,
-      name: 'sz-task',
+      id: Math.ceil(Math.random() * 1000) + '',
       type: 'sz-task',
       x: x,
       y: y
@@ -118,13 +117,21 @@ G6.registerBehavior('flow-block-event', {
     const graph = this.graph;
     const { item, target, x, y } = e;
     const { attrs, cfg } = target
+
     // 不是锚点上的节点
     if (cfg.name !== ShapeName.AnchorPointShape) return 
-    
+    // 是in类型的节点
+    if (attrs.anchorPointType === AnchorPointType.In) return
+
     const { flowBlockId, anchorPointIndex } = attrs
 
+    // 此锚点是否已连接
+    // const outEdges = item.getOutEdges()
+    // const isLinked = outEdges.some(edge => edge._cfg.sourceAnchorIndex === anchorPointIndex)
+    // if(isLinked) return
+
     this.currentEdge = graph.addItem('edge', {
-      id: Math.random() * 1000, // todo
+      id: Math.ceil(Math.random() * 1000) + '', // todo
       type: 'sz-edge',
       source: flowBlockId,
       sourceAnchor: anchorPointIndex,
@@ -143,7 +150,7 @@ G6.registerBehavior('flow-block-event', {
 
     const graph = this.graph;
     const { x, y } = e
-    const { target, targetNode, targetAnchor} = this.findTargetAnchorPointByHoverNode(e)
+    const { target, targetAnchor} = this.findTargetAnchorPointByHoverNode(e)
 
     let config = {
       target: {x, y}
@@ -152,7 +159,6 @@ G6.registerBehavior('flow-block-event', {
     if (target) {
       config = {
         target,
-        targetNode,
         targetAnchor
       }
     }
@@ -179,18 +185,32 @@ G6.registerBehavior('flow-block-event', {
   findTargetAnchorPointByHoverNode(e) {
     const { x, y } = e
     const graph = this.graph
+
     const hoverNode = graph.findAllByState('node', 'hover')[0]
     if (!hoverNode) return {}
 
-    const { id } = hoverNode.getModel()
-    const {anchorIndex} = hoverNode.getLinkPoint({x, y})
+    const { id, x: nodeX, y: nodeY } = hoverNode.getModel()
+    const relativeX = x - nodeX
+    const relativeY = y - nodeY
 
-    const result = {
+    const group = hoverNode.getContainer()
+    const anchorPointGroup = group.getChildByIndex(1)
+    const anchorPointShapes = anchorPointGroup.getChildren()
+
+    const { anchorPointIndex } = anchorPointShapes.reduce((pre, shape) => {
+      const { anchorPointIndex, anchorPointType, x: shapeX, y: shapeY } = shape.attrs
+      
+      if(anchorPointType === AnchorPointType.Out) return pre
+      
+      const r = Math.sqrt(Math.pow(relativeX - shapeX, 2) + Math.pow(relativeY - shapeY, 2))
+      
+      return r < pre.r || !pre.r ? { anchorPointIndex, r } : pre
+    }, {})
+    
+    return typeof anchorPointIndex === 'number' ? {
       target: id,
-      targetAnchor: anchorIndex
-    }
-
-    return result
+      targetAnchor: anchorPointIndex
+    } : {}
   }
 
   

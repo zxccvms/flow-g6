@@ -16,11 +16,26 @@ export enum ShapeName{
 
 export enum GroupName{
   AnchorPointGroup = 'anchor-point-group',
-  utilShapeGroup = 'anchor-point-group',
+  UtilGroup = 'util-shape-group',
+}
+
+export enum UtilGroupChildrenName{ // 需要和ShapeName的key相同
+  EditorShape = 'editor-shape-group',
+  DeleteShape = 'delete-shape-group',
 }
 
 export enum AnchorPointType{
-  All = 0,
-  In,
-  Out
+  All = 'all',
+  In = 'in',
+  Out = 'out'
+}
+
+export enum EdgeShapeName{
+  EdgeShape = 'edge-shape',
+  DeleteShape = 'edge-delete-shape',
+  IconShape = 'edge-icon-shape'
+}
+
+export enum EdgeGroupName{
+  DeleteShape = 'delete-shape-group'
 }
