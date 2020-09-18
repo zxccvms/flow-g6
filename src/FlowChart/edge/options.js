@@ -13,9 +13,30 @@ export const edgeShapeOptions = {
   }
 }
 
+export const textShapeOptions = {
+  name: EdgeShapeName.TextShape,
+  style: {
+    fontSize: 12,
+    fontWeight: 400,
+    fill: '#666',
+    textBaseline: 'middle',
+    textAlign: 'center',
+  }
+}
+
+export const rectShapeOptions = {
+  name: EdgeShapeName.RectShape,
+  style: {
+    fill: '#E6E6E6',
+    radius: [3,3,3,3]
+  }
+}
+
+
 export const deleteShapeOptions = {
   name: EdgeShapeName.DeleteShape,
   iconShape: {
+    name: EdgeShapeName.IconShape,
     style: {
       text:'\ue709',
       fontFamily: 'iconfont',
@@ -24,6 +45,11 @@ export const deleteShapeOptions = {
       fontWeight: 400,
       textBaseline: 'middle',
       cursor: 'pointer'
+    },
+    calcCoord(point) {
+      const x = point.x - deleteShapeOptions.iconShape.style.fontSize / 2
+      const y = point.y
+      return {x, y}
     }
   },
   style: {

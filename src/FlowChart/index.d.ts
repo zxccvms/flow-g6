@@ -33,9 +33,12 @@ export enum AnchorPointType{
 export enum EdgeShapeName{
   EdgeShape = 'edge-shape',
   DeleteShape = 'edge-delete-shape',
-  IconShape = 'edge-icon-shape'
+  IconShape = 'edge-icon-shape',
+  TextShape = 'edge-text-shape',
+  RectShape = 'edge-rect-shape'
 }
 
 export enum EdgeGroupName{
+  TextShape = 'text-shape-group',
   DeleteShape = 'delete-shape-group'
 }

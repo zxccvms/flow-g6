@@ -1,6 +1,6 @@
 import G6 from '@antv/g6';
-import { edgeShapeOptions, deleteShapeOptions } from './options'
-import {EdgeGroupName, EdgeShapeName} from '../index.d.ts'
+import { edgeShapeOptions, deleteShapeOptions, textShapeOptions, rectShapeOptions } from './options'
+import {EdgeGroupName} from '../index.d.ts'
 import './event'
 
 const uniqBy = (arr,key)=>{
@@ -14,6 +14,9 @@ const uniqBy = (arr,key)=>{
 
 
 G6.registerEdge('sz-edge', {
+  options: edgeShapeOptions,
+  drawLabel() { }, // 去除edge自带的label 使用自带的textShape
+  updateLabel() { },// 去除edge自带的label 使用自带的textShape
   setState(name, value, item) {},
   draw(cfg, group) {
     const points = this.getPoints(cfg)
@@ -22,7 +25,7 @@ G6.registerEdge('sz-edge', {
 
     const keyShape = group.addShape('path', {
       attrs: {
-        ...edgeShapeOptions.style,
+        ...this.options.style,
         path,
       },
       name: this.options.name,
@@ -31,77 +34,96 @@ G6.registerEdge('sz-edge', {
     return keyShape;
   },
   afterDraw(cfg, group) {
-    this.addDeleteShape(cfg, group)
-    this.addTextShape(cfg, group)
+    this.addTextGroup(cfg, group)
+    this.addDeleteGroup(cfg, group)
   },
   afterUpdate(cfg, item) { 
+    const { id } = cfg
     const points = this.getPoints(cfg)
     cfg.centerPoint = this.getCenterPoint(points)
+    const { x, y } = cfg.centerPoint
 
     const group = item.getContainer()
-    const [_, deleteGroup, textShape] = group.getChildren()
-    const [deleteShape, iconShape] = deleteGroup.getChildren()
 
-    textShape.attr(cfg.centerPoint)
-    deleteShape.attr(cfg.centerPoint)
-    iconShape.attr(cfg.centerPoint)
-  },
-
-  // 添加文本shape
-  addTextShape(cfg, group) {
-    const { x = 0, y = 0 } = cfg.centerPoint || {}
-    console.log("addTextShape -> x, y", x, y)
-
-    const textCfg = {
-      attrs: {
-        text: 123,
-        fill: '#666',
-        x,
-        y
+    for (const groupName in EdgeGroupName) {
+      const sGroup = group.findById(`${id}-${EdgeGroupName[groupName]}`)
+      if (sGroup) {
+        sGroup.resetMatrix()
+        sGroup.move(x, y)
       }
     }
-
-    group.addShape('text', textCfg)
   },
 
-  // 添加删除的shape
-  addDeleteShape(cfg,group) {
+  // 添加textGroup
+  addTextGroup(cfg, group) {
+    if (!cfg.label) return
+    
+    const { id, centerPoint, label, labelCfg = {} } = cfg
+    const { x, y } = centerPoint
+    
+    const textGroup = group.addGroup({
+      id: `${id}-${EdgeGroupName.TextShape}`,
+      name: EdgeGroupName.TextShape
+    })
+
+    textGroup.move(x, y)
+
+    const textShape = textGroup.addShape('text', {
+      attrs: {
+        ...textShapeOptions.style,
+        ...labelCfg,
+        text: label
+      },
+      name: textShapeOptions.name
+    })
+
+    const bbox = textShape.getBBox()
+
+    const rectShape = textGroup.addShape('rect', {
+      attrs: {
+        ...rectShapeOptions.style,
+        x: bbox.x - 4,
+        y: bbox.y - 5,
+        width: bbox.width + 8,
+        height: bbox.height + 10
+      },
+      name: rectShapeOptions.name
+    })
+
+    rectShape.toBack()
+  },
+
+  // 添加删除的group
+  addDeleteGroup(cfg,group) {
     const { id, centerPoint } = cfg
-    const { x = 0, y = 0 } = centerPoint || {}
+    const { x, y } = centerPoint
     
     const deleteGroup = group.addGroup({
       id: `${id}-${EdgeGroupName.DeleteShape}`,
       name: EdgeGroupName.DeleteShape,
-      x: 100,
-      y: 200
     })
-    console.log("addDeleteShape -> deleteGroup", deleteGroup)
+
+    deleteGroup.move(x, y)
+    deleteGroup.hide()
 
     const { style, name, iconShape } = deleteShapeOptions
-    const { style: iconStyle } = iconShape
+    const { style: iconStyle, name: iconName } = iconShape
 
-    const circleCfg = {
+    deleteGroup.addShape('circle', {
       attrs: {
         ...style,
         flowBlockId: id,
-        // x,
-        // y
       },
       name,
-    }
+    })
 
-    deleteGroup.addShape('circle', circleCfg)
-
-    const iconCfg = {
+    deleteGroup.addShape('text', {
       attrs: {
         ...iconStyle,
-        // x: x - iconStyle.fontSize / 2,
-        // y
+        x: - iconStyle.fontSize / 2
       },
-      name: EdgeShapeName.IconShape
-    }
-
-    deleteGroup.addShape('text', iconCfg)
+      name: iconName,
+    })
   },
 
   getPoints(cfg) {

@@ -27,8 +27,6 @@ const getNodeDefinition = type => {
      * 关于 keyShape 可参考文档 核心概念-节点/边/Combo-图形 Shape 与 keyShape
      */
     draw(cfg, group) {
-    console.log("draw -> group", group)
-      
       const _cfg = {
         attrs: {
           ...this.options.style,
@@ -83,6 +81,8 @@ const getNodeDefinition = type => {
       if (state === 'selected') {
         utilGroup[value ? 'show' : 'hide']()
       }
+
+      item.toFront()
     },
     
     /**
@@ -168,7 +168,7 @@ const getNodeDefinition = type => {
 
       const utilShapeGroup = group.addGroup({
         id: `${id}-${GroupName.UtilGroup}`,
-        name: GroupName.UtilGroup
+        name: GroupName.UtilGroup,
       })
 
       utilShapeGroup.hide()

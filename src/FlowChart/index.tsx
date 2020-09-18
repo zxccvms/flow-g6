@@ -47,6 +47,10 @@ const data = {
     sourceAnchor: 3,
     target: 'node3',
     targetAnchor: 0,
+    label: '很高兴遇见你',
+    labelCfg: {
+      fill: '#017000'
+    }
   }]
 }
 

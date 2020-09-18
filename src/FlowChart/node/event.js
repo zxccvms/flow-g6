@@ -169,13 +169,14 @@ G6.registerBehavior('flow-block-event', {
   // 移除连接中的边实例
   removeCurrentEdge() {
     if (!this.currentEdge) return
-    
+
     const targetNode = this.currentEdge.getTarget()
 
     // 判断目标节点是否拥有锚点
     if (!targetNode.getAnchorPoints ||
       !targetNode.getAnchorPoints().length) {
-      this.currentEdge.destroy()
+      // this.currentEdge.destroy()
+      this.graph.removeItem(this.currentEdge)
     }
     
     this.isLinking = false
