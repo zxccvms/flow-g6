@@ -48,6 +48,7 @@ const getNodeDefinition = type => {
     afterUpdate(cfg, node) {},
     
     setState(state, value, item) {
+      item.toFront()
       switch (state) {
         case 'selected': {
           this.updateShapeState(state, value, item)
@@ -81,8 +82,6 @@ const getNodeDefinition = type => {
       if (state === 'selected') {
         utilGroup[value ? 'show' : 'hide']()
       }
-
-      item.toFront()
     },
     
     /**

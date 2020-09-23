@@ -17,7 +17,56 @@ G6.registerEdge('sz-edge', {
   options: edgeShapeOptions,
   drawLabel() { }, // 去除edge自带的label 使用自带的textShape
   updateLabel() { },// 去除edge自带的label 使用自带的textShape
-  setState(name, value, item) {},
+  setState(state, value, item) {
+    item.toFront()
+    switch (state) {
+      case 'selected': {
+        this.updateShape(state, value, item)
+        break;
+      }
+      case 'hover': {
+        const currentStates = item.getStates()
+        if (currentStates.indexOf('selected') !== -1) break;
+        
+        this.updateShape(state, value, item)
+        break;
+      }
+      case 'hover-delete': {
+        this.updateDeleteShapeState('hover', value, item)
+        break;
+      }
+      default: break;
+    }
+  },
+  // 更新allShape属性
+  updateShape(state, value, item) {
+    const { stateStyles, style } = this.options
+    
+    const { id } = item.getModel() 
+    const group = item.getContainer()
+    const keyShape = group.getFirst()
+    const deleteGroup = group.findById(`${id}-${EdgeGroupName.DeleteShape}`)
+
+    keyShape.attr(value ? stateStyles[state] : style)
+    deleteGroup[value ? 'show' : 'hide']()
+  },
+
+  // 更新deleteShape属性
+  updateDeleteShapeState(state, value, item) {
+    const { style, stateStyles, iconShape: iconShapeCfg } = deleteShapeOptions
+    const { style: iconStyle, stateStyles: iconStateStyles} = iconShapeCfg
+
+    const { id } = item.getModel() 
+    const group = item.getContainer()
+    const keyShape = group.getFirst()
+    const deleteGroup = group.findById(`${id}-${EdgeGroupName.DeleteShape}`)
+    const [deleteShape, iconShape] = deleteGroup.getChildren()
+    // 边虚线
+    keyShape.attr(value ? {lineDash: [4,2]} : {lineDash: []})
+    deleteShape.attr(value ? stateStyles[state] : style)
+    iconShape.attr(value ? iconStateStyles[state] : iconStyle)
+  },
+
   draw(cfg, group) {
     const points = this.getPoints(cfg)
     const path = this.getPath(points)

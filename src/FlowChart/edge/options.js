@@ -6,10 +6,21 @@ export const edgeShapeOptions = {
     stroke: '#6B7799',
     lineWidth: 1,
     lineAppendWidth: 2,
+    lineDash: [],
     endArrow: {
       path: 'M 0,0 L 6,4 L 6,-4 Z',
       fill: '#7B85A1',
     },
+  },
+  stateStyles: {
+    hover: {
+      stroke: '#376DFF',
+      lineWidth: 2,
+    },
+    selected: {
+      stroke: '#376DFF',
+      lineWidth: 2,
+    }
   }
 }
 
@@ -46,6 +57,11 @@ export const deleteShapeOptions = {
       textBaseline: 'middle',
       cursor: 'pointer'
     },
+    stateStyles: {
+      hover: {
+        fontSize: 16,
+      }
+    },
     calcCoord(point) {
       const x = point.x - deleteShapeOptions.iconShape.style.fontSize / 2
       const y = point.y
@@ -59,10 +75,7 @@ export const deleteShapeOptions = {
   },
   stateStyles: {
     hover: {
-      r: 12,
-    },
-    selected: {
-      r: 12,
-    },
+      r: 13,
+    }
   },
 }

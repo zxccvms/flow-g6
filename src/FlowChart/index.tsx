@@ -32,14 +32,14 @@ const data = {
     type: 'sz-judeg',
     }],
   edges: [
-    // {
-    // id: 1,
-    // type: 'sz-edge',
-    // source: 'node1',
-    // sourceAnchor: 0,
-    // target: 'node0',
-    // targetAnchor: 0,
-    // },
+    {
+    id: 1,
+    type: 'sz-edge',
+    source: 'node1',
+    sourceAnchor: 0,
+    target: 'node0',
+    targetAnchor: 0,
+    },
     {
     id: 2,
     type: 'sz-edge',

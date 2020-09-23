@@ -83,6 +83,7 @@ G6.registerBehavior('flow-block-event', {
   removeFlowBlockNodeSelectedState() {
     if (this.selectedNode) {
       this.selectedNode.setState('selected', false)
+      this.selectedNode = null
     }
   },
   // 点击流程块
@@ -139,14 +140,14 @@ G6.registerBehavior('flow-block-event', {
     })
 
     if (this.currentEdge) {
-      this.isLinking = true
+      this.graph.isLinking = true
     }
   },
 
   // 更新连接中的边实例
   updateCurrentEdge(e) {
     // 不是连线中 || 不存在边
-    if (!this.isLinking || !this.currentEdge) return
+    if (!this.graph.isLinking || !this.currentEdge) return
 
     const graph = this.graph;
     const { x, y } = e
@@ -179,7 +180,7 @@ G6.registerBehavior('flow-block-event', {
       this.graph.removeItem(this.currentEdge)
     }
     
-    this.isLinking = false
+    this.graph.isLinking = false
     this.currentEdge = null
   },
   // 查找hover状态的Node上离鼠标最近的锚点
