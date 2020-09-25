@@ -9,8 +9,8 @@ G6.registerBehavior('flow-block-event', {
   },
   getEvents() {
     return {
-      'afteradditem': 'onAfterAddNode',
-      'afterremoveitem': 'onAfterRemoveNode',
+      // 'afteradditem': 'onAfterAddNode',
+      // 'afterremoveitem': 'onAfterRemoveNode',
       'node:mousedown': 'onNodeDown',
       'mousemove': 'onMouseMove',
       'mouseup': 'onMouseUp',
@@ -18,8 +18,8 @@ G6.registerBehavior('flow-block-event', {
       'node:click': 'onNodeClick',
       'node:mouseover': 'onNodeMouseOver',
       'node:mouseout': 'onNodeMouseOut',
-
-
+      'node:drag': 'onNodeDrag',
+      'node:dragend': 'onNodeDragEnd',
 
       'canvas:dblclick': 'onDbClick',
 
@@ -27,21 +27,27 @@ G6.registerBehavior('flow-block-event', {
   },
   onDbClick(e) {
     const { x, y } = e
-    const graph = this.graph
 
-    const node = graph.addItem('node', {
-      id: Math.ceil(Math.random() * 1000) + '',
-      type: 'sz-task',
-      x: x,
-      y: y
-    })
+    this.addGuideEdge({x, y}, {x: 0, y: 0})
+    
+    
+    // const { x, y } = e
+    // const graph = this.graph
+    // const node = graph.addItem('node', {
+    //   id: Math.ceil(Math.random() * 1000) + '',
+    //   type: 'sz-task',
+    //   x: x,
+    //   y: y
+    // })
+
+
   },
 
   onAfterAddNode(item, model) {
-    this.fetchFlowBlocks()
+    this.setFlowBlockBBoxs()
   },
   onAfterRemoveNode(item, model) {
-    this.fetchFlowBlocks()
+    this.setFlowBlockBBoxs()
   },
 
   onNodeDown(e) {
@@ -68,13 +74,33 @@ G6.registerBehavior('flow-block-event', {
     this.onFlowBlockNodeMouseOut(e)
   },
 
-  // 获取所有流程块节点
-  fetchFlowBlocks() {
+  onNodeDrag(e) {
+    const { item } = e
     const graph = this.graph
+    const { id } = item.getModel()
+    const { minX, minY, maxX, maxY } = item.getBBox()
 
-    const flowBlockNodes = graph.getNodes() || []
-    graph.set('flowBlockNodes', flowBlockNodes)
+    const triggerRange = {
+      x: 200,
+      y: 200,
+      r: 5
+    }
+
+    const flowBlockNodes = graph.getNodes()
+
+    // flowBlockNodes.forEach(node => {
+    //   const bBox = node.getBBox()
+    //   if( )
+
+    // })
+
+    
   },
+
+  // onNodeDragEnd(e) {
+  //   console.log("onNodeDragEnd -> e", e)
+    
+  // },
 
   /**
    * 节点状态设置
@@ -183,6 +209,7 @@ G6.registerBehavior('flow-block-event', {
     this.graph.isLinking = false
     this.currentEdge = null
   },
+  
   // 查找hover状态的Node上离鼠标最近的锚点
   findTargetAnchorPointByHoverNode(e) {
     const { x, y } = e
@@ -213,7 +240,32 @@ G6.registerBehavior('flow-block-event', {
       target: id,
       targetAnchor: anchorPointIndex
     } : {}
-  }
+  },
 
+  // 添加引导线
+  addGuideEdge(source, target) {
+    const graph = this.graph
+
+    if (this.guideEdge) {
+      graph.removeItem(this.guideEdge)
+    }
+
+    const guideEdge = graph.addItem('edge', {
+      id: Math.ceil(Math.random() * 1000) + '',
+      type: 'line',
+      source,
+      target
+    })
+
+    this.guideEdge = guideEdge
+  },
+
+  // 移除引导线
+  removeGuideEdge() {
+    if (this.guideEdge) {
+      this.graph.removeItem(this.guideEdge)
+    }
+    this.guideEdge = null
+  }
   
 });

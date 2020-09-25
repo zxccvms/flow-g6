@@ -214,7 +214,6 @@ const getNodeDefinition = type => {
         shapeGroup.addShape('text', iconCfg)
       }
     }
-
   }
 }
 
