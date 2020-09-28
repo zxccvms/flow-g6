@@ -75,32 +75,12 @@ G6.registerBehavior('flow-block-event', {
   },
 
   onNodeDrag(e) {
-    const { item } = e
-    const graph = this.graph
-    const { id } = item.getModel()
-    const { minX, minY, maxX, maxY } = item.getBBox()
-
-    const triggerRange = {
-      x: 200,
-      y: 200,
-      r: 5
-    }
-
-    const flowBlockNodes = graph.getNodes()
-
-    // flowBlockNodes.forEach(node => {
-    //   const bBox = node.getBBox()
-    //   if( )
-
-    // })
-
-    
+    this.flowBlockAutoAlign(e)    
   },
 
-  // onNodeDragEnd(e) {
-  //   console.log("onNodeDragEnd -> e", e)
-    
-  // },
+  onNodeDragEnd(e) {
+    this.removeGuideEdge()
+  },
 
   /**
    * 节点状态设置
@@ -242,6 +222,95 @@ G6.registerBehavior('flow-block-event', {
     } : {}
   },
 
+  // 流程块自动对齐
+  flowBlockAutoAlign(e) {
+    const { item } = e
+    const graph = this.graph
+    const { id } = item.getModel()
+    const { minX, minY, maxX, maxY, width, height } = item.getBBox()
+
+    const triggerRange = {
+      x: 400,
+      y: 400,
+      r: 10
+    }
+
+    const flowBlockNodes = graph.getNodes()
+    let flag = false
+
+    for (const node of flowBlockNodes) {
+      if (node.getModel().id === id) continue
+      
+      const bBox = node.getBBox()
+      
+      const source = {
+        x: minX - bBox.minX < 0 ? maxX : minX,
+        y: minY - bBox.minY < 0 ? maxY : minY
+      }
+      
+      const target = {
+        x: minX - bBox.minX < 0 ? bBox.minX : bBox.maxX,
+        y: minY - bBox.minY < 0 ? bBox.minY : bBox.maxY
+      }
+
+      if(source.x - target.x > triggerRange.x || source.y - target.y > triggerRange.y ) continue
+
+      switch (true) {
+        case Math.abs(minX - bBox.minX) <= triggerRange.r: {
+          graph.updateItem(item, { x: bBox.minX })
+          this.addGuideEdge({ x: bBox.minX, y: source.y }, { x: bBox.minX, y: target.y})
+          flag = true
+          break
+        }
+        case Math.abs(minX - bBox.maxX) <= triggerRange.r: {
+          graph.updateItem(item, { x: bBox.maxX })
+          this.addGuideEdge({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
+          flag = true
+          break
+        }
+        case Math.abs(maxX - bBox.minX) <= triggerRange.r: {
+          graph.updateItem(item, { x: bBox.minX - width })
+          this.addGuideEdge({x: bBox.minX, y: source.y}, {x: bBox.minX, y: target.y})
+          flag = true
+          break
+        }
+        case Math.abs(maxX - bBox.maxX) <= triggerRange.r: {
+          graph.updateItem(item, { x: bBox.maxX - width })
+          this.addGuideEdge({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
+          flag = true
+          break
+        }
+        case Math.abs(minY - bBox.minY) <= triggerRange.r: {
+          graph.updateItem(item, { y: bBox.minY })
+          this.addGuideEdge({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
+          flag = true
+          break
+        }
+        case Math.abs(minY - bBox.maxY) <= triggerRange.r: {
+          graph.updateItem(item, { y: bBox.maxY })
+          this.addGuideEdge({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
+          flag = true
+          break
+        }
+        case Math.abs(maxY - bBox.minY) <= triggerRange.r: {
+          graph.updateItem(item, { y: bBox.minY - height})
+          this.addGuideEdge({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
+          flag = true
+          break
+        }
+        case Math.abs(maxY - bBox.maxY) <= triggerRange.r: {
+          graph.updateItem(item, { y: bBox.maxY - height})
+          this.addGuideEdge({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
+          flag = true
+          break
+        }
+        default: break
+      }
+    }
+    
+    if(!flag) this.removeGuideEdge()
+  },
+
   // 添加引导线
   addGuideEdge(source, target) {
     const graph = this.graph
@@ -254,7 +323,10 @@ G6.registerBehavior('flow-block-event', {
       id: Math.ceil(Math.random() * 1000) + '',
       type: 'line',
       source,
-      target
+      target,
+      style: {
+        stroke: '#000',
+      }
     })
 
     this.guideEdge = guideEdge
