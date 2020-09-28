@@ -1,13 +1,12 @@
 import React, { useCallback, useRef } from 'react'
 import G6 from '@antv/g6';
+import Grid from './Grid'
 
 import './node/index'
 import './edge/index'
 import './layout/index'
 
 import './style/index.css'
-
-const grid = new G6.Grid();
 
 const data = {
   nodes: [{
@@ -54,6 +53,7 @@ const data = {
   }]
 }
 
+const grid = new Grid()
 
 const FlowChart = () => {
   const graph = useRef(null)
@@ -63,6 +63,8 @@ const FlowChart = () => {
       container: 'container', // String | HTMLElement，必须，在 Step 1 中创建的容器 id 或容器本身
       width: 800, // Number，必须，图的宽度
       height: 500, // Number，必须，图的高度
+      maxZoom: 3,
+      minZoom: 1,
       modes: {
         default: ['drag-canvas', 'zoom-canvas', 'drag-node', 'flow-block-event', 'edge-event'], // 允许拖拽画布、放缩画布、拖拽节点
       },
@@ -81,10 +83,12 @@ const FlowChart = () => {
     graph.current.data(data);
     graph.current.render();
 
+    graph.current.zoomTo(2, {x:0,y:0})
+
     // 兼容icon渲染失败
-    // setTimeout(() => {
-    //   graph.current.paint();
-    // }, 16);
+    setTimeout(() => {
+      graph.current.paint();
+    }, 16);
 
     // 更新布局参数
     // graph.current.updateLayout({

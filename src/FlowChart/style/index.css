@@ -12,6 +12,13 @@
   z-index: 0 !important;
 }
 
+.g6-grid{
+  top: -4000px !important;
+  left: -4000px !important;
+  width: 80000px !important;
+  height: 80000px !important;
+}
+
 .layout-init-btn{
   position: absolute;
 

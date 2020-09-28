@@ -75,7 +75,8 @@ G6.registerBehavior('flow-block-event', {
   },
 
   onNodeDrag(e) {
-    this.flowBlockAutoAlign(e)    
+    this.moveFlowBlockOnGrid(e)
+    this.flowBlockAutoAlign(e)   
   },
 
   onNodeDragEnd(e) {
@@ -222,6 +223,20 @@ G6.registerBehavior('flow-block-event', {
     } : {}
   },
 
+  // 在格子上移动流程块
+  moveFlowBlockOnGrid(e) {
+    const { item } = e
+    const graph = this.graph
+    const { x, y } = item.getBBox()
+
+    const moveBase = {
+      x: 20, // 移动基数x
+      y: 20, // 移动基数y
+    }
+
+    graph.updateItem(item, { x: x - x % moveBase.x, y: y - y % moveBase.y})
+  },
+
   // 流程块自动对齐
   flowBlockAutoAlign(e) {
     const { item } = e
@@ -230,9 +245,9 @@ G6.registerBehavior('flow-block-event', {
     const { minX, minY, maxX, maxY, width, height } = item.getBBox()
 
     const triggerRange = {
-      x: 400,
-      y: 400,
-      r: 10
+      x: 400, // 节点间触发吸附的距离x
+      y: 400, // 节点间触发吸附的距离y
+      r: 10 // 吸附半径
     }
 
     const flowBlockNodes = graph.getNodes()
@@ -306,6 +321,8 @@ G6.registerBehavior('flow-block-event', {
         }
         default: break
       }
+
+      if (flag) break
     }
     
     if(!flag) this.removeGuideEdge()
