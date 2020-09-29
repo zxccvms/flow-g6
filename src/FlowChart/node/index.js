@@ -4,14 +4,17 @@ import {
   anchorPointShapeOptions,
   iconShapeOptions,
   textShapeOptions,
-  utilShapesOptionsMap
+  utilShapesOptionsMap,
 } from './options'
 
 import {
   FlowBlockType,
   GroupName,
   ShapeName,
-  UtilGroupChildrenName
+  UtilGroupChildrenName,
+  AnchorPointType,
+  inTypeAchorPoints,
+  outTypeAchorPoints
 } from '../index.d.ts'
 
 import './event'
@@ -48,6 +51,7 @@ const getNodeDefinition = type => {
     afterUpdate(cfg, node) {},
     
     setState(state, value, item) {
+      console.log("setState -> state, value", state, value)
       item.toFront()
       switch (state) {
         case 'selected': {
@@ -61,22 +65,67 @@ const getNodeDefinition = type => {
           this.updateShapeState(state, value, item)
           break;
         }
+        case 'anchor-active': {
+          const { stateStyles } = anchorPointShapeOptions
+          const { id } = item.getModel()
+          const group = item.getContainer()
+          const anchorPointGroup = group.findById(`${id}-${GroupName.AnchorPointGroup}`)
+          const anchorPointShapes = anchorPointGroup.getChildren()
+
+          if (value === 'in') {
+            anchorPointShapes.forEach(shape =>
+              inTypeAchorPoints.some(inType => inType === shape.attr('anchorPointType')) ?
+                shape.attr(stateStyles.able) :
+                shape.attr(stateStyles.unable)
+            )
+          } else if (value === 'out') {
+            anchorPointShapes.forEach(shape =>
+              outTypeAchorPoints.some(outType => outType === shape.attr('anchorPointType')) ?
+                shape.attr(stateStyles.able) :
+                shape.attr(stateStyles.unable)
+            )
+          }
+          break;
+        }
+        case 'hover-utilGroup': {
+          const { id } = item.getModel()
+          const group = item.getContainer()
+          const utilGroup = group.findById(`${id}-${GroupName.UtilGroup}`)
+          const utilGroupChilds = utilGroup.getChildren()
+
+          utilGroupChilds.forEach(group => { 
+            const name = group.cfg.name
+            console.log("setState -> name", name)
+            const { style, stateStyles } = utilShapesOptionsMap[name]
+
+            // group.getChildren().forEach(shape =>
+            //   shape.attr(name === value ? stateStyles.hover : style)
+            // )
+          })
+          
+          // if (value === UtilGroupChildrenName.EditorShape) {
+            
+          // }
+
+          break;
+        }
         default: break;
       }
     },
     // 更新allShape属性
     updateShapeState(state, value, item) {
       const { stateStyles, style } = this.options
-      const { stateStyles: anchorStateStyles, style: anchorStyle} = anchorPointShapeOptions
+      // const { stateStyles: anchorStateStyles, style: anchorStyle} = anchorPointShapeOptions
       const { stateStyles: iconStateStyles, style: iconStyle} = iconShapeOptions
       const { stateStyles: textStateStyles, style: textStyle} = textShapeOptions
       
       const group = item.getContainer()
       const [keyShape, anchorPointGroup, iconShape, textShape, utilGroup] = group.getChildren()
-      const anchorPointShapes = anchorPointGroup.getChildren()
+      // const anchorPointShapes = anchorPointGroup.getChildren()
   
       keyShape.attr(value ? stateStyles[state] : style)
-      anchorPointShapes.forEach(shape => shape.attr(value ? anchorStateStyles[state] : anchorStyle))
+      // anchorPointShapes.forEach(shape => shape.attr(value ? anchorStateStyles[state] : anchorStyle))
+      anchorPointGroup[value ? 'show' : 'hide']()
       iconShape.attr(value ? iconStateStyles[state] : iconStyle)
       textShape.attr(value ? textStateStyles[state] : textStyle)
       if (state === 'selected') {
@@ -102,19 +151,24 @@ const getNodeDefinition = type => {
         id: `${id}-${GroupName.AnchorPointGroup}`,
         name: GroupName.AnchorPointGroup
       })
+
+      anchorPointGroup.hide()
   
-      anchorPoints.forEach(([xPercentage, yPercentage], index) => {
-        const x = xPercentage * width
-        const y = yPercentage * height
+      anchorPoints.forEach(([percentageX, percentageY], index) => {
+        const x = percentageX * width
+        const y = percentageY * height
+
+        const anchorPointType = this.options.anchorPointsType[index]
   
         const _cfg = {
           attrs: {
             ...style,
+            ...anchorPointShapeOptions[anchorPointType],
             x,
             y,
             flowBlockId: id,
             anchorPointIndex: index,
-            anchorPointType: this.options.anchorPointsType[index]
+            anchorPointType
           },
           name,
         }

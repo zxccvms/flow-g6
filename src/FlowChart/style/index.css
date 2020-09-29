@@ -12,11 +12,13 @@
   z-index: 0 !important;
 }
 
+/* 定位必须为宽高的一半 基点为图像的中心点，图像基点必须在画布 0,0 位置处*/
 .g6-grid{
+  transform-origin: 50% 50% 0 !important;
   top: -4000px !important;
   left: -4000px !important;
-  width: 80000px !important;
-  height: 80000px !important;
+  width: 8000px !important;
+  height: 8000px !important;
 }
 
 .layout-init-btn{

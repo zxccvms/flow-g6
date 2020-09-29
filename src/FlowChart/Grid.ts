@@ -11,7 +11,7 @@ class Grid extends G6.Grid {
     let { matrix } = param;
     if (!matrix) matrix = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
-    const transform = `matrix(${matrix[0]}, ${matrix[1]}, ${matrix[3]}, ${matrix[4]}, ${matrix[6] + 4000 * matrix[0]}, ${matrix[7] + 4000 * matrix[0]})`;
+    const transform = `matrix(${matrix[0]}, ${matrix[1]}, ${matrix[3]}, ${matrix[4]}, ${matrix[6]}, ${matrix[7]})`;
 
     modifyCSS(gridContainer, {
       transform,

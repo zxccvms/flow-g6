@@ -1,7 +1,10 @@
 import G6 from '@antv/g6';
-import { ShapeName, AnchorPointType } from '../index.d.ts'
+import { ShapeName, AnchorPointType, inTypeAchorPoints, outTypeAchorPoints, EdgeStyleType, GroupName, UtilGroupChildrenName } from '../index.d.ts'
+import { edgeShapeOptions ,textShapeOptions } from '../edge/options'
+import { utilShapesOptionsMap } from './options';
 
 G6.registerBehavior('flow-block-event', {
+  offset: 0.5, // 更新坐标的偏移值 g6会将更新的坐标数值 - 0.5
   getDefaultCfg() {
     return {
       multiple: true
@@ -9,7 +12,7 @@ G6.registerBehavior('flow-block-event', {
   },
   getEvents() {
     return {
-      // 'afteradditem': 'onAfterAddNode',
+      'afteradditem': 'onAfterAddNode',
       // 'afterremoveitem': 'onAfterRemoveNode',
       'node:mousedown': 'onNodeDown',
       'mousemove': 'onMouseMove',
@@ -26,11 +29,6 @@ G6.registerBehavior('flow-block-event', {
     };
   },
   onDbClick(e) {
-    const { x, y } = e
-
-    this.addGuideEdge({x, y}, {x: 0, y: 0})
-    
-    
     // const { x, y } = e
     // const graph = this.graph
     // const node = graph.addItem('node', {
@@ -39,12 +37,12 @@ G6.registerBehavior('flow-block-event', {
     //   x: x,
     //   y: y
     // })
-
-
   },
 
-  onAfterAddNode(item, model) {
-    this.setFlowBlockBBoxs()
+  onAfterAddNode({ item, model }) {
+    if (item.getType() !== 'node') return
+    // this.setFlowBlockBBoxs()
+    item.setState('anchor-active', 'out')
   },
   onAfterRemoveNode(item, model) {
     this.setFlowBlockBBoxs()
@@ -65,18 +63,45 @@ G6.registerBehavior('flow-block-event', {
     this.removeFlowBlockNodeSelectedState()
   },
   onNodeClick(e) {
-    this.onFlowBlockNodeClick(e)
+    const parent = e.target.getParent()
+    const { name } = parent.cfg
+
+    this.onFlowBlockShapeClick(e)
+
+    if (name === UtilGroupChildrenName.DeleteShape) { // 删除按钮
+      this.onDeleteShapeClick(e)
+    } else if (name === UtilGroupChildrenName.EditorShape) { // 编辑按钮
+      this.onEditorShapeClick(e)
+    }
   },
   onNodeMouseOver(e) {
-    this.onFlowBlockNodeMouseOver(e)
+    const parent = e.target.getParent()
+    const { name } = parent.cfg
+
+    this.onFlowBlockShapeMouseOver(e)
+
+    if (Object.keys(UtilGroupChildrenName).some(key =>
+      UtilGroupChildrenName[key] === name)
+    ) { // 删除按钮 和 编辑按钮
+      this.onUtilGroupMouseOver(e)
+    }
   },
   onNodeMouseOut(e) {
-    this.onFlowBlockNodeMouseOut(e)
+    const parent = e.target.getParent()
+    const { name } = parent.cfg
+
+    this.onFlowBlockShapeMouseOut(e)
+
+    if (Object.keys(UtilGroupChildrenName).some(key =>
+      UtilGroupChildrenName[key] === name)
+    ) { // 删除按钮 和 编辑按钮
+      this.onUtilGroupMouseOut(e)
+    }
   },
 
   onNodeDrag(e) {
     this.moveFlowBlockOnGrid(e)
-    this.flowBlockAutoAlign(e)   
+    this.flowBlockAutoAlign(e)
   },
 
   onNodeDragEnd(e) {
@@ -93,8 +118,8 @@ G6.registerBehavior('flow-block-event', {
       this.selectedNode = null
     }
   },
-  // 点击流程块
-  onFlowBlockNodeClick(e) {
+  // 点击流程块keyShape
+  onFlowBlockShapeClick(e) {
     const { item } = e;
     const currentStates = item.getStates()
     
@@ -105,15 +130,55 @@ G6.registerBehavior('flow-block-event', {
     item.setState('selected', nextSelectedState)
     this.selectedNode = item
   },
-  // 鼠标移入流程块
-  onFlowBlockNodeMouseOver(e) {
+  // 鼠标移入流程块keyShape
+  onFlowBlockShapeMouseOver(e) {
     const { item } = e;
+    
+    // 连线中不触发源节点的hover状态
+    if (this.currentEdge && this.currentEdge.getSource() === item) return
+
     item.setState('hover', true)
   },
-  // 鼠标移出流程块
-  onFlowBlockNodeMouseOut(e) {
+  // 鼠标移出流程块keyShape
+  onFlowBlockShapeMouseOut(e) {
     const { item } = e;
     item.setState('hover', false)
+  },
+
+  // 设置所有流程块锚点激活类型
+  setFlowNodesAnchorActiveState(value) {
+    this.graph.getNodes().forEach(node => node.setState('anchor-active', value))
+  },
+
+  // 点击deleteShape按钮
+  onDeleteShapeClick(e) {
+    const { item } = e
+
+    this.removeFlowBlockNodeSelectedState()
+    this.graph.removeItem(item)
+  },
+
+  // 点击editorShape按钮
+  onEditorShapeClick(e) {
+    const { item } = e
+    console.log("onEditorShapeClick -> item", item)
+
+  },
+
+  // 鼠标移入UtiGroup
+  onUtilGroupMouseOver(e) {
+    const { item, target } = e
+    const parent = target.getParent()
+    const { name } = parent.cfg
+
+    item.setState('hover-utilGroup', name)
+  },
+
+  // 鼠标移出UtiGroup
+  onUtilGroupMouseOut(e) {
+    const { item } = e
+
+    item.setState('hover-utilGroup', false)
   },
 
   /**
@@ -125,29 +190,44 @@ G6.registerBehavior('flow-block-event', {
     const graph = this.graph;
     const { item, target, x, y } = e;
     const { attrs, cfg } = target
-
+    const { flowBlockId, anchorPointIndex, anchorPointType } = attrs
+    
     // 不是锚点上的节点
     if (cfg.name !== ShapeName.AnchorPointShape) return 
     // 是in类型的节点
-    if (attrs.anchorPointType === AnchorPointType.In) return
+    if (!outTypeAchorPoints.some(outType => outType === anchorPointType)) return
 
-    const { flowBlockId, anchorPointIndex } = attrs
 
     // 此锚点是否已连接
     // const outEdges = item.getOutEdges()
     // const isLinked = outEdges.some(edge => edge._cfg.sourceAnchorIndex === anchorPointIndex)
     // if(isLinked) return
 
+    let specialAttr = {}
+    let styleType = EdgeStyleType.Normal
+
+    if (textShapeOptions[anchorPointType]) {
+      specialAttr = {
+        ...specialAttr,
+        label: anchorPointType,
+      }
+    }
+
+    if (edgeShapeOptions[anchorPointType] || textShapeOptions[anchorPointType]) styleType = anchorPointType
+
     this.currentEdge = graph.addItem('edge', {
       id: Math.ceil(Math.random() * 1000) + '', // todo
       type: 'sz-edge',
       source: flowBlockId,
       sourceAnchor: anchorPointIndex,
-      target: {x, y}
+      target: { x, y },
+      ...specialAttr,
+      styleType
     })
 
     if (this.currentEdge) {
       this.graph.isLinking = true
+      this.setFlowNodesAnchorActiveState('in')
     }
   },
 
@@ -179,16 +259,19 @@ G6.registerBehavior('flow-block-event', {
     if (!this.currentEdge) return
 
     const targetNode = this.currentEdge.getTarget()
-
+    // 连接的是同一个节点
+    if (targetNode === this.currentEdge.getSource()) {
+      this.graph.removeItem(this.currentEdge)
+    }
     // 判断目标节点是否拥有锚点
     if (!targetNode.getAnchorPoints ||
       !targetNode.getAnchorPoints().length) {
-      // this.currentEdge.destroy()
       this.graph.removeItem(this.currentEdge)
     }
     
     this.graph.isLinking = false
     this.currentEdge = null
+    this.setFlowNodesAnchorActiveState('out')
   },
   
   // 查找hover状态的Node上离鼠标最近的锚点
@@ -198,6 +281,7 @@ G6.registerBehavior('flow-block-event', {
 
     const hoverNode = graph.findAllByState('node', 'hover')[0]
     if (!hoverNode) return {}
+    if (hoverNode === this.currentEdge.getSource()) return {}
 
     const { id, x: nodeX, y: nodeY } = hoverNode.getModel()
     const relativeX = x - nodeX
@@ -210,7 +294,7 @@ G6.registerBehavior('flow-block-event', {
     const { anchorPointIndex } = anchorPointShapes.reduce((pre, shape) => {
       const { anchorPointIndex, anchorPointType, x: shapeX, y: shapeY } = shape.attrs
       
-      if(anchorPointType === AnchorPointType.Out) return pre
+      if(!inTypeAchorPoints.some(inType => inType === anchorPointType)) return pre
       
       const r = Math.sqrt(Math.pow(relativeX - shapeX, 2) + Math.pow(relativeY - shapeY, 2))
       
@@ -223,6 +307,10 @@ G6.registerBehavior('flow-block-event', {
     } : {}
   },
 
+  /**
+   * 移动事件
+   */
+
   // 在格子上移动流程块
   moveFlowBlockOnGrid(e) {
     const { item } = e
@@ -234,7 +322,10 @@ G6.registerBehavior('flow-block-event', {
       y: 20, // 移动基数y
     }
 
-    graph.updateItem(item, { x: x - x % moveBase.x, y: y - y % moveBase.y})
+    graph.updateItem(item, {
+      x: x - x % moveBase.x + this.offset,
+      y: y - y % moveBase.y + this.offset
+    })
   },
 
   // 流程块自动对齐
@@ -272,49 +363,49 @@ G6.registerBehavior('flow-block-event', {
 
       switch (true) {
         case Math.abs(minX - bBox.minX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.minX })
+          graph.updateItem(item, { x: bBox.minX + this.offset })
           this.addGuideEdge({ x: bBox.minX, y: source.y }, { x: bBox.minX, y: target.y})
           flag = true
           break
         }
         case Math.abs(minX - bBox.maxX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.maxX })
+          graph.updateItem(item, { x: bBox.maxX + this.offset  })
           this.addGuideEdge({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
           flag = true
           break
         }
         case Math.abs(maxX - bBox.minX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.minX - width })
+          graph.updateItem(item, { x: bBox.minX - width + this.offset  })
           this.addGuideEdge({x: bBox.minX, y: source.y}, {x: bBox.minX, y: target.y})
           flag = true
           break
         }
         case Math.abs(maxX - bBox.maxX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.maxX - width })
+          graph.updateItem(item, { x: bBox.maxX - width + this.offset  })
           this.addGuideEdge({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
           flag = true
           break
         }
         case Math.abs(minY - bBox.minY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.minY })
+          graph.updateItem(item, { y: bBox.minY + this.offset  })
           this.addGuideEdge({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
           flag = true
           break
         }
         case Math.abs(minY - bBox.maxY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.maxY })
+          graph.updateItem(item, { y: bBox.maxY + this.offset  })
           this.addGuideEdge({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
           flag = true
           break
         }
         case Math.abs(maxY - bBox.minY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.minY - height})
+          graph.updateItem(item, { y: bBox.minY - height + this.offset })
           this.addGuideEdge({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
           flag = true
           break
         }
         case Math.abs(maxY - bBox.maxY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.maxY - height})
+          graph.updateItem(item, { y: bBox.maxY - height + this.offset })
           this.addGuideEdge({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
           flag = true
           break
@@ -342,7 +433,8 @@ G6.registerBehavior('flow-block-event', {
       source,
       target,
       style: {
-        stroke: '#000',
+        stroke: '#666',
+        lineDash: [4,2],
       }
     })
 
@@ -355,6 +447,5 @@ G6.registerBehavior('flow-block-event', {
       this.graph.removeItem(this.guideEdge)
     }
     this.guideEdge = null
-  }
-  
+  },
 });

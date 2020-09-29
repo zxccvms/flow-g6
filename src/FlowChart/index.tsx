@@ -7,6 +7,7 @@ import './edge/index'
 import './layout/index'
 
 import './style/index.css'
+import { findShortestPath } from '@antv/g6/lib/algorithm';
 
 const data = {
   nodes: [{
@@ -46,10 +47,10 @@ const data = {
     sourceAnchor: 3,
     target: 'node3',
     targetAnchor: 0,
-    label: '很高兴遇见你',
-    labelCfg: {
-      fill: '#017000'
-    }
+    // label: '很高兴遇见你',
+    // labelCfg: {
+    //   fill: '#017000'
+    // }
   }]
 }
 
@@ -64,7 +65,7 @@ const FlowChart = () => {
       width: 800, // Number，必须，图的宽度
       height: 500, // Number，必须，图的高度
       maxZoom: 3,
-      minZoom: 1,
+      minZoom: 0.5,
       modes: {
         default: ['drag-canvas', 'zoom-canvas', 'drag-node', 'flow-block-event', 'edge-event'], // 允许拖拽画布、放缩画布、拖拽节点
       },
@@ -83,8 +84,6 @@ const FlowChart = () => {
     graph.current.data(data);
     graph.current.render();
 
-    graph.current.zoomTo(2, {x:0,y:0})
-
     // 兼容icon渲染失败
     setTimeout(() => {
       graph.current.paint();
@@ -98,7 +97,10 @@ const FlowChart = () => {
   
 
   return <div id="container" ref={container}>
-    <button className="layout-init-btn" onClick={() => graph.current.layout()}>布局</button>
+    <button className="layout-init-btn" onClick={() => {
+      graph.current.layout()
+      graph.current.moveTo(0,0)
+    }}>布局</button>
   </div>
 }
 

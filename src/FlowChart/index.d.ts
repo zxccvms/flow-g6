@@ -25,10 +25,15 @@ export enum UtilGroupChildrenName{ // 需要和ShapeName的key相同
 }
 
 export enum AnchorPointType{
-  All = 'all',
+  Normal = 'normal',
   In = 'in',
-  Out = 'out'
+  Out = 'out',
+  Yes = 'yes',
+  No = 'no'
 }
+
+export const inTypeAchorPoints = [AnchorPointType.Normal, AnchorPointType.In]
+export const outTypeAchorPoints = [AnchorPointType.Normal, AnchorPointType.Out, AnchorPointType.Yes, AnchorPointType.No]
 
 export enum EdgeShapeName{
   EdgeShape = 'edge-shape',
@@ -41,4 +46,10 @@ export enum EdgeShapeName{
 export enum EdgeGroupName{
   TextShape = 'text-shape-group',
   DeleteShape = 'delete-shape-group'
+}
+
+export enum EdgeStyleType{
+  Normal = 'normal',
+  No = 'no',
+  Yes = 'yes'
 }

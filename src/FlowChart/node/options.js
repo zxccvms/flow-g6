@@ -5,8 +5,8 @@ import { FlowBlockType, ShapeName, AnchorPointType } from '../index.d.ts'
 // 流程块节点公共的配置
 export const flowBlockPublicOptions = {
   style: {
-    width: 140,
-    height: 40,
+    width: 139,
+    height: 39,
     fill: '#FFFFFF',
     stroke: '#FFFFFF',
     lineWidth: 1,
@@ -43,10 +43,10 @@ export const flowBlockOptionsMap = {
       [0, 0.5], // 左侧中间
     ],
     anchorPointsType: [ // 锚点类型
-      AnchorPointType.All,
-      AnchorPointType.All,
-      AnchorPointType.All,
-      AnchorPointType.All
+      AnchorPointType.Normal,
+      AnchorPointType.Normal,
+      AnchorPointType.Normal,
+      AnchorPointType.Normal
     ],
   },
   [FlowBlockType.Start]: {
@@ -102,8 +102,8 @@ export const flowBlockOptionsMap = {
     ],
     anchorPointsType: [ // 锚点类型
       AnchorPointType.In,
-      AnchorPointType.Out,
-      AnchorPointType.Out
+      AnchorPointType.No,
+      AnchorPointType.Yes
     ]
   },
 }
@@ -111,21 +111,28 @@ export const flowBlockOptionsMap = {
 // 锚点上的节点
 export const anchorPointShapeOptions = {
   style: {
-    r: 0,
+    r: 4,
     fill: '#fff',
-    stroke: '#6B7799',
-    cursor: 'crosshair'
+    stroke: '#376DFF',
+    cursor: 'crosshair',
+    lineAppendWidth: 10, // 事件触发范围
+  },
+  no: {
+    stroke: 'red'
+  },
+  yes: {
+    stroke: 'green'
   },
   name: ShapeName.AnchorPointShape,
   stateStyles: {
-    hover: {
-      r: 3,
-      stroke: '#376DFF',
+    able: {
+      fill: '#fff',
+      cursor: 'crosshair'
     },
-    selected: {
-      r: 3,
-      stroke: '#376DFF',
-    },
+    unable: {
+      fill: '#ddd',
+      cursor: 'not-allowed'
+    }
   },
 }
 
@@ -200,10 +207,7 @@ export const utilShapesOptionsMap = {
     },
     stateStyles: {
       hover: {
-        r: 12,
-      },
-      selected: {
-        r: 12,
+        r: 13,
       },
     },
   },
@@ -218,7 +222,7 @@ export const utilShapesOptionsMap = {
         fontWeight: 400,
         textBaseline: 'middle',
         cursor: 'pointer'
-      }
+      },
     },
     style: {
       r: 12,
@@ -229,10 +233,7 @@ export const utilShapesOptionsMap = {
     },
     stateStyles: {
       hover: {
-        r: 12,
-      },
-      selected: {
-        r: 12,
+        r: 13,
       },
     },
   }

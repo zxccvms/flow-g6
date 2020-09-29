@@ -112,6 +112,10 @@ G6.registerBehavior('edge-event', {
   onDeleteShapeClick(e) {
     const { item } = e;
 
+    if (item === this.selectedEdge) {
+      this.selectedEdge = null
+    }
+
     this.graph.removeItem(item)
   }
 });

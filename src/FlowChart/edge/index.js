@@ -42,12 +42,12 @@ G6.registerEdge('sz-edge', {
   updateShape(state, value, item) {
     const { stateStyles, style } = this.options
     
-    const { id } = item.getModel() 
+    const { id, styleType } = item.getModel() 
     const group = item.getContainer()
     const keyShape = group.getFirst()
     const deleteGroup = group.findById(`${id}-${EdgeGroupName.DeleteShape}`)
 
-    keyShape.attr(value ? stateStyles[state] : style)
+    keyShape.attr(value ? stateStyles[state] : {...style, ...this.options[styleType]})
     deleteGroup[value ? 'show' : 'hide']()
   },
 
@@ -68,6 +68,7 @@ G6.registerEdge('sz-edge', {
   },
 
   draw(cfg, group) {
+    const { styleType } = cfg
     const points = this.getPoints(cfg)
     const path = this.getPath(points)
     cfg.centerPoint = this.getCenterPoint(points)
@@ -75,6 +76,7 @@ G6.registerEdge('sz-edge', {
     const keyShape = group.addShape('path', {
       attrs: {
         ...this.options.style,
+        ...this.options[styleType],
         path,
       },
       name: this.options.name,
@@ -107,7 +109,7 @@ G6.registerEdge('sz-edge', {
   addTextGroup(cfg, group) {
     if (!cfg.label) return
     
-    const { id, centerPoint, label, labelCfg = {} } = cfg
+    const { id, centerPoint, label, labelCfg = {}, styleType } = cfg
     const { x, y } = centerPoint
     
     const textGroup = group.addGroup({
@@ -120,6 +122,7 @@ G6.registerEdge('sz-edge', {
     const textShape = textGroup.addShape('text', {
       attrs: {
         ...textShapeOptions.style,
+        ...textShapeOptions[styleType],
         ...labelCfg,
         text: label
       },

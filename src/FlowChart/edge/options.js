@@ -12,14 +12,36 @@ export const edgeShapeOptions = {
       fill: '#7B85A1',
     },
   },
+  no: {
+    stroke: 'red',
+    endArrow: {
+      path: 'M 0,0 L 6,4 L 6,-4 Z',
+      fill: 'red'
+    }
+  },
+  yes: {
+    stroke: 'green',
+    endArrow: {
+      path: 'M 0,0 L 6,4 L 6,-4 Z',
+      fill: 'green'
+    }
+  },
   stateStyles: {
     hover: {
       stroke: '#376DFF',
       lineWidth: 2,
+      endArrow: {
+        path: 'M 0,0 L 6,4 L 6,-4 Z',
+        fill: '#376DFF'
+      }
     },
     selected: {
       stroke: '#376DFF',
       lineWidth: 2,
+      endArrow: {
+        path: 'M 0,0 L 6,4 L 6,-4 Z',
+        fill: '#376DFF'
+      }
     }
   }
 }
@@ -32,6 +54,12 @@ export const textShapeOptions = {
     fill: '#666',
     textBaseline: 'middle',
     textAlign: 'center',
+  },
+  no: {
+    fill: 'red'
+  },
+  yes: {
+    fill: 'green'
   }
 }
 
