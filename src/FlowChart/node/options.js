@@ -1,4 +1,4 @@
-import { FlowBlockType, ShapeName, AnchorPointType } from '../index.d.ts'
+import { FlowBlockType, ShapeName, AnchorPointType, UtilGroupChildrenName } from '../index.d.ts'
 
 
 
@@ -11,7 +11,10 @@ export const flowBlockPublicOptions = {
     stroke: '#FFFFFF',
     lineWidth: 1,
     cursor: 'pointer',
-    radius: [8,8,8,8]
+    radius: [8, 8, 8, 8],
+    shadowColor: '#DADADA',
+    shadowOffsetY: 4,
+    shadowBlur: 12
   },
   stateStyles: {
     hover: {
@@ -28,8 +31,9 @@ export const flowBlockPublicOptions = {
 export const flowBlockOptionsMap = {
   [FlowBlockType.Task]: {
     name: ShapeName.FlowBlockShape,
-    text: '任务',
+    text: '任务块',
     icon: '\ue72a',
+    iconCfg: {},
     style: {
       ...flowBlockPublicOptions.style
     },
@@ -41,18 +45,21 @@ export const flowBlockOptionsMap = {
       [1, 0.5], // 右侧中间
       [0.5, 1], // 底部中间
       [0, 0.5], // 左侧中间
+      [0.75,1]
     ],
     anchorPointsType: [ // 锚点类型
       AnchorPointType.Normal,
       AnchorPointType.Normal,
       AnchorPointType.Normal,
-      AnchorPointType.Normal
+      AnchorPointType.Normal,
+      AnchorPointType.Error,
     ],
   },
   [FlowBlockType.Start]: {
     name: ShapeName.FlowBlockShape,
     text: '开始',
     icon: '\ue70c',
+    iconCfg: {},
     style: {
       ...flowBlockPublicOptions.style
     },
@@ -70,6 +77,7 @@ export const flowBlockOptionsMap = {
     name: ShapeName.FlowBlockShape,
     text: '结束',
     icon: '\ue718',
+    iconCfg: {},
     style: {
       ...flowBlockPublicOptions.style
     },
@@ -89,6 +97,11 @@ export const flowBlockOptionsMap = {
     name: ShapeName.FlowBlockShape,
     text: '判断',
     icon: '\ue715',
+    iconCfg: {
+      style: {
+        fill: '#FF493D'
+      }
+    },
     style: {
       ...flowBlockPublicOptions.style
     },
@@ -110,6 +123,16 @@ export const flowBlockOptionsMap = {
 
 // 锚点上的节点
 export const anchorPointShapeOptions = {
+  name: ShapeName.AnchorPointShape,
+  no: {
+    stroke: 'red'
+  },
+  yes: {
+    stroke: 'green'
+  },
+  error: {
+    stroke: 'red'
+  },
   style: {
     r: 4,
     fill: '#fff',
@@ -117,13 +140,6 @@ export const anchorPointShapeOptions = {
     cursor: 'crosshair',
     lineAppendWidth: 10, // 事件触发范围
   },
-  no: {
-    stroke: 'red'
-  },
-  yes: {
-    stroke: 'green'
-  },
-  name: ShapeName.AnchorPointShape,
   stateStyles: {
     able: {
       fill: '#fff',
@@ -184,10 +200,10 @@ export const textShapeOptions = {
 }
 
 // utilShapes
-export const utilShapesOptionsMap = {
-  [ShapeName.EditorShape]: {
-    name: ShapeName.EditorShape,
-    iconShape: {
+export const utilGroupsOptionsMap = {
+  [UtilGroupChildrenName.EditorShapeGroup]: {
+    [ShapeName.IconShape]: {
+      name: ShapeName.IconShape,
       style: {
         text:'\ue704',
         fontFamily: 'iconfont',
@@ -196,24 +212,34 @@ export const utilShapesOptionsMap = {
         fontWeight: 400,
         textBaseline: 'middle',
         cursor: 'pointer'
-      }
-    },
-    style: {
-      r: 12,
-      x: 140 + 8 + 12,
-      y: 20,
-      fill: '#fff',
-      cursor: 'pointer'
-    },
-    stateStyles: {
-      hover: {
-        r: 13,
+      },
+      stateStyles: {
+        hover: {
+          fontSize: 17
+        },
       },
     },
+    [ShapeName.EditorShape]: {
+      name: ShapeName.EditorShape,
+      style: {
+        r: 12,
+        y: 20,
+        fill: '#fff',
+        cursor: 'pointer',
+        shadowColor: 'rgba(0,0,0,0.06)',
+        shadowOffsetY: 2,
+        shadowBlur: 8
+      },
+      stateStyles: {
+        hover: {
+          r: 13,
+        },
+      },
+    }
   },
-  [ShapeName.DeleteShape]: {
-    name: ShapeName.DeleteShape,
-    iconShape: {
+  [UtilGroupChildrenName.DeleteShapeGroup]: {
+    [ShapeName.IconShape]: {
+      name: ShapeName.IconShape,
       style: {
         text:'\ue79a',
         fontFamily: 'iconfont',
@@ -221,21 +247,31 @@ export const utilShapesOptionsMap = {
         fontSize: 16,
         fontWeight: 400,
         textBaseline: 'middle',
-        cursor: 'pointer'
+        cursor: 'pointer',
+      },
+      stateStyles: {
+        hover: {
+          fontSize: 17
+        },
       },
     },
-    style: {
-      r: 12,
-      x: 140 + 8 + 12,
-      y: 20,
-      fill: '#fff',
-      cursor: 'pointer'
-    },
-    stateStyles: {
-      hover: {
-        r: 13,
+    [ShapeName.DeleteShape]: {
+      name: ShapeName.DeleteShape,
+      style: {
+        r: 12,
+        y: 20,
+        fill: '#fff',
+        cursor: 'pointer',
+        shadowColor: 'rgba(0,0,0,0.06)',
+        shadowOffsetY: 2,
+        shadowBlur: 8
       },
-    },
+      stateStyles: {
+        hover: {
+          r: 13,
+        },
+      },
+    }
   }
 }
 

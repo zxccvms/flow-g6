@@ -2,7 +2,7 @@ export enum FlowBlockType{
   Task = 'sz-task',
   Start = 'sz-start',
   End = 'sz-end',
-  Judge = 'sz-judeg'
+  Judge = 'sz-judge'
 }
 
 export enum ShapeName{
@@ -16,12 +16,12 @@ export enum ShapeName{
 
 export enum GroupName{
   AnchorPointGroup = 'anchor-point-group',
-  UtilGroup = 'util-shape-group',
+  UtilGroup = 'util-group',
 }
 
 export enum UtilGroupChildrenName{ // 需要和ShapeName的key相同
-  EditorShape = 'editor-shape-group',
-  DeleteShape = 'delete-shape-group',
+  EditorShapeGroup = 'editor-shape-group',
+  DeleteShapeGroup = 'delete-shape-group',
 }
 
 export enum AnchorPointType{
@@ -29,11 +29,14 @@ export enum AnchorPointType{
   In = 'in',
   Out = 'out',
   Yes = 'yes',
-  No = 'no'
+  No = 'no',
+  Error = 'error'
 }
 
 export const inTypeAchorPoints = [AnchorPointType.Normal, AnchorPointType.In]
-export const outTypeAchorPoints = [AnchorPointType.Normal, AnchorPointType.Out, AnchorPointType.Yes, AnchorPointType.No]
+export const outTypeAchorPoints = [AnchorPointType.Normal, AnchorPointType.Out, AnchorPointType.Yes, AnchorPointType.No, AnchorPointType.Error]
+
+export const EdgeType = 'line-arrow'
 
 export enum EdgeShapeName{
   EdgeShape = 'edge-shape',

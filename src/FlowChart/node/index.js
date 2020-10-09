@@ -4,7 +4,7 @@ import {
   anchorPointShapeOptions,
   iconShapeOptions,
   textShapeOptions,
-  utilShapesOptionsMap,
+  utilGroupsOptionsMap,
 } from './options'
 
 import {
@@ -18,6 +18,44 @@ import {
 } from '../index.d.ts'
 
 import './event'
+
+/**
+ * 计算字符串的长度
+ * @param {string} str 指定的字符串
+ * @return {number} 字符串长度
+ */
+const calcStrLen = str => {
+  let len = 0;
+  for (let i = 0; i < str.length; i++) {
+    if (str.charCodeAt(i) > 0 && str.charCodeAt(i) < 128) {
+      len++;
+    } else {
+      len += 2;
+    }
+  }
+  return len;
+};
+
+/**
+* 计算显示的字符串
+* @param {string} str 要裁剪的字符串
+* @param {number} maxWidth 最大宽度
+* @param {number} fontSize 字体大小
+* @return {string} 处理后的字符串
+*/
+const fittingString = (str, maxWidth, fontSize) => {
+  const fontWidth = fontSize * 1.3; // 字号+边距
+  maxWidth = maxWidth * 1.5; // 需要根据自己项目调整
+  const width = calcStrLen(str) * fontWidth;
+  const ellipsis = '…';
+  if (width > maxWidth) {
+    const actualLen = Math.floor((maxWidth - 10) / fontWidth);
+    const result = str.substring(0, actualLen) + ellipsis;
+    return result;
+  }
+  return str;
+};
+
 
 const getNodeDefinition = type => {
   return {
@@ -45,13 +83,12 @@ const getNodeDefinition = type => {
       this.addAnchorPointShapes(cfg, group)
       this.addIconShape(cfg, group)
       this.addTextShape(cfg, group)
-      this.addUtilShapes(cfg, group)
+      this.addUtilGroup(cfg, group)
     },
-    update(cfg, node) {},
-    afterUpdate(cfg, node) {},
+    // update(cfg, node) {},
+    // afterUpdate(cfg, node) {},
     
     setState(state, value, item) {
-      console.log("setState -> state, value", state, value)
       item.toFront()
       switch (state) {
         case 'selected': {
@@ -66,71 +103,79 @@ const getNodeDefinition = type => {
           break;
         }
         case 'anchor-active': {
-          const { stateStyles } = anchorPointShapeOptions
-          const { id } = item.getModel()
-          const group = item.getContainer()
-          const anchorPointGroup = group.findById(`${id}-${GroupName.AnchorPointGroup}`)
-          const anchorPointShapes = anchorPointGroup.getChildren()
-
-          if (value === 'in') {
-            anchorPointShapes.forEach(shape =>
-              inTypeAchorPoints.some(inType => inType === shape.attr('anchorPointType')) ?
-                shape.attr(stateStyles.able) :
-                shape.attr(stateStyles.unable)
-            )
-          } else if (value === 'out') {
-            anchorPointShapes.forEach(shape =>
-              outTypeAchorPoints.some(outType => outType === shape.attr('anchorPointType')) ?
-                shape.attr(stateStyles.able) :
-                shape.attr(stateStyles.unable)
-            )
-          }
+          this.updateAnchorShapeState(state, value, item)
           break;
         }
         case 'hover-utilGroup': {
-          const { id } = item.getModel()
-          const group = item.getContainer()
-          const utilGroup = group.findById(`${id}-${GroupName.UtilGroup}`)
-          const utilGroupChilds = utilGroup.getChildren()
-
-          utilGroupChilds.forEach(group => { 
-            const name = group.cfg.name
-            console.log("setState -> name", name)
-            const { style, stateStyles } = utilShapesOptionsMap[name]
-
-            // group.getChildren().forEach(shape =>
-            //   shape.attr(name === value ? stateStyles.hover : style)
-            // )
-          })
-          
-          // if (value === UtilGroupChildrenName.EditorShape) {
-            
-          // }
-
+          this.updateUtilGroupState(state, value, item)
           break;
         }
         default: break;
       }
     },
-    // 更新allShape属性
+
+    // 更新所有Shape属性
     updateShapeState(state, value, item) {
-      const { stateStyles, style } = this.options
-      // const { stateStyles: anchorStateStyles, style: anchorStyle} = anchorPointShapeOptions
-      const { stateStyles: iconStateStyles, style: iconStyle} = iconShapeOptions
+      const { stateStyles, style, iconCfg = {} } = this.options
+      const { stateStyles: iconSpecialStateStyles = {}, style: iconSpecialStyle = {} } = iconCfg
+      const { stateStyles: iconStateStyles, style: iconStyle } = iconShapeOptions
       const { stateStyles: textStateStyles, style: textStyle} = textShapeOptions
       
       const group = item.getContainer()
       const [keyShape, anchorPointGroup, iconShape, textShape, utilGroup] = group.getChildren()
-      // const anchorPointShapes = anchorPointGroup.getChildren()
   
       keyShape.attr(value ? stateStyles[state] : style)
-      // anchorPointShapes.forEach(shape => shape.attr(value ? anchorStateStyles[state] : anchorStyle))
       anchorPointGroup[value ? 'show' : 'hide']()
-      iconShape.attr(value ? iconStateStyles[state] : iconStyle)
+      iconShape.attr(value ?
+        { ...iconStateStyles[state], ...iconSpecialStateStyles[state] } :
+        { ...iconStyle, ...iconSpecialStyle }
+      )
       textShape.attr(value ? textStateStyles[state] : textStyle)
+
       if (state === 'selected') {
         utilGroup[value ? 'show' : 'hide']()
       }
+    },
+
+    // 更新锚点
+    updateAnchorShapeState(state, value, item) {
+      const { stateStyles } = anchorPointShapeOptions
+      const { id } = item.getModel()
+      const group = item.getContainer()
+      const anchorPointGroup = group.findById(`${id}-${GroupName.AnchorPointGroup}`)
+      const anchorPointShapes = anchorPointGroup.getChildren()
+
+      if (value === 'in') {
+        anchorPointShapes.forEach(shape =>
+          inTypeAchorPoints.some(inType => inType === shape.attr('anchorPointType')) ?
+            shape.attr(stateStyles.able) :
+            shape.attr(stateStyles.unable)
+        )
+      } else if (value === 'out') {
+        anchorPointShapes.forEach(shape =>
+          outTypeAchorPoints.some(outType => outType === shape.attr('anchorPointType')) ?
+            shape.attr(stateStyles.able) :
+            shape.attr(stateStyles.unable)
+        )
+      }
+    },
+
+    // 更新utilGroup
+    updateUtilGroupState(state, value, item) {
+      const { id } = item.getModel()
+      const group = item.getContainer()
+      const utilGroup = group.findById(`${id}-${GroupName.UtilGroup}`)
+      const utilGroupChilds = utilGroup.getChildren()
+
+      utilGroupChilds.forEach(group => { 
+        const groupName = group.cfg.name
+
+        group.getChildren().forEach(shape => { 
+          const shapeName = shape.get('name')
+          const { style, stateStyles} = utilGroupsOptionsMap[groupName][shapeName]
+          shape.attr(groupName === value ? stateStyles.hover : style)
+        })
+      })
     },
     
     /**
@@ -179,13 +224,15 @@ const getNodeDefinition = type => {
 
     // 增加icon shape
     addIconShape(cfg, group) {
-      const { icon } = this.options
+      const { icon, iconCfg = {} } = this.options
       const { style, name } = iconShapeOptions
+      const { style: specialStyle = {} } = iconCfg
       const { id } = cfg
 
       const _cfg = {
         attrs: {
           ...style,
+          ...specialStyle,
           text: icon,
           flowBlockId: id,
         },
@@ -200,12 +247,12 @@ const getNodeDefinition = type => {
     addTextShape(cfg, group) {
       const { text } = this.options
       const { style, name } = textShapeOptions
-      const { id } = cfg
+      const { id, label } = cfg
 
       const _cfg = {
         attrs: {
           ...style,
-          text,
+          text: fittingString(label || text, 84, 12),
           flowBlockId: id,
         },
         name,
@@ -216,7 +263,7 @@ const getNodeDefinition = type => {
     },
 
     // 增加util shape
-    addUtilShapes(cfg, group) {
+    addUtilGroup(cfg, group) {
       const { id } = cfg
 
       const utilShapeGroup = group.addGroup({
@@ -229,7 +276,7 @@ const getNodeDefinition = type => {
       for(const groupKey in UtilGroupChildrenName) {
         const groupName = UtilGroupChildrenName[groupKey]
         
-        if (groupName === UtilGroupChildrenName.EditorShape && type !== FlowBlockType.Task) continue
+        if (groupName === UtilGroupChildrenName.EditorShapeGroup && type !== FlowBlockType.Task) continue
 
         const { length } = utilShapeGroup.getChildren()
         
@@ -238,12 +285,13 @@ const getNodeDefinition = type => {
           name: groupName,
         })
 
-        const shapeName = ShapeName[groupKey]// groupKey 在定义的时候和ShapeName的 key 相同
-        const { style, name, iconShape } = utilShapesOptionsMap[shapeName] 
-        const { x, y } = style
+        const utilGroupOptions = utilGroupsOptionsMap[groupName]
+        const utilShape = utilGroupOptions[groupName.replace('-group', '')]
+        const iconShape = utilGroupOptions[ShapeName.IconShape]
+        const { style, name } = utilShape
         const { style: iconStyle } = iconShape
         
-        const realX = x + length * 30
+        const realX = 140 + 8 + 12 + length * 30
     
         const circleCfg = {
           attrs: {
@@ -260,7 +308,7 @@ const getNodeDefinition = type => {
           attrs: {
             ...iconStyle,
             x: realX - iconStyle.fontSize / 2,
-            y: y,
+            y: style.y,
           },
           name: ShapeName.IconShape
         }

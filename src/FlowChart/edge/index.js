@@ -1,6 +1,6 @@
 import G6 from '@antv/g6';
-import { edgeShapeOptions, deleteShapeOptions, textShapeOptions, rectShapeOptions } from './options'
-import {EdgeGroupName} from '../index.d.ts'
+import { edgeShapeOptions, deleteGroupOptions, textShapeOptions, rectShapeOptions } from './options'
+import { EdgeType, EdgeGroupName, EdgeShapeName } from '../index.d.ts'
 import './event'
 
 const uniqBy = (arr,key)=>{
@@ -13,7 +13,7 @@ const uniqBy = (arr,key)=>{
 };
 
 
-G6.registerEdge('sz-edge', {
+G6.registerEdge(EdgeType, {
   options: edgeShapeOptions,
   drawLabel() { }, // 去除edge自带的label 使用自带的textShape
   updateLabel() { },// 去除edge自带的label 使用自带的textShape
@@ -53,8 +53,8 @@ G6.registerEdge('sz-edge', {
 
   // 更新deleteShape属性
   updateDeleteShapeState(state, value, item) {
-    const { style, stateStyles, iconShape: iconShapeCfg } = deleteShapeOptions
-    const { style: iconStyle, stateStyles: iconStateStyles} = iconShapeCfg
+    const { style, stateStyles } = deleteGroupOptions[EdgeShapeName.DeleteShape]
+    const { style: iconStyle, stateStyles: iconStateStyles} = deleteGroupOptions[EdgeShapeName.IconShape]
 
     const { id } = item.getModel() 
     const group = item.getContainer()
@@ -158,8 +158,8 @@ G6.registerEdge('sz-edge', {
     deleteGroup.move(x, y)
     deleteGroup.hide()
 
-    const { style, name, iconShape } = deleteShapeOptions
-    const { style: iconStyle, name: iconName } = iconShape
+    const { style, name } = deleteGroupOptions[EdgeShapeName.DeleteShape]
+    const { style: iconStyle, name: iconName } = deleteGroupOptions[EdgeShapeName.IconShape]
 
     deleteGroup.addShape('circle', {
       attrs: {

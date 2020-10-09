@@ -26,6 +26,13 @@ export const edgeShapeOptions = {
       fill: 'green'
     }
   },
+  error: {
+    stroke: 'red',
+    endArrow: {
+      path: 'M 0,0 L 6,4 L 6,-4 Z',
+      fill: 'red'
+    }
+  },
   stateStyles: {
     hover: {
       stroke: '#376DFF',
@@ -72,9 +79,8 @@ export const rectShapeOptions = {
 }
 
 
-export const deleteShapeOptions = {
-  name: EdgeShapeName.DeleteShape,
-  iconShape: {
+export const deleteGroupOptions = {
+  [EdgeShapeName.IconShape]: {
     name: EdgeShapeName.IconShape,
     style: {
       text:'\ue709',
@@ -83,27 +89,33 @@ export const deleteShapeOptions = {
       fontSize: 16,
       fontWeight: 400,
       textBaseline: 'middle',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      shadowColor: 'rgba(0,0,0,0.06)',
+      shadowOffsetY: 2,
+      shadowBlur: 8
     },
     stateStyles: {
       hover: {
-        fontSize: 16,
+        fontSize: 17,
       }
     },
     calcCoord(point) {
-      const x = point.x - deleteShapeOptions.iconShape.style.fontSize / 2
+      const x = point.x - deleteGroupOptions[EdgeShapeName.IconShape].style.fontSize / 2
       const y = point.y
       return {x, y}
     }
   },
-  style: {
-    r: 12,
-    fill: '#396EFE',
-    cursor: 'pointer'
-  },
-  stateStyles: {
-    hover: {
-      r: 13,
-    }
-  },
+  [EdgeShapeName.DeleteShape]: {
+    name: EdgeShapeName.DeleteShape,
+    style: {
+      r: 12,
+      fill: '#396EFE',
+      cursor: 'pointer'
+    },
+    stateStyles: {
+      hover: {
+        r: 13,
+      }
+    },
+  }
 }

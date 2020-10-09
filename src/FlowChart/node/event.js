@@ -1,7 +1,6 @@
 import G6 from '@antv/g6';
-import { ShapeName, AnchorPointType, inTypeAchorPoints, outTypeAchorPoints, EdgeStyleType, GroupName, UtilGroupChildrenName } from '../index.d.ts'
+import { ShapeName, AnchorPointType, inTypeAchorPoints, outTypeAchorPoints, EdgeStyleType, GroupName, UtilGroupChildrenName, EdgeType } from '../index.d.ts'
 import { edgeShapeOptions ,textShapeOptions } from '../edge/options'
-import { utilShapesOptionsMap } from './options';
 
 G6.registerBehavior('flow-block-event', {
   offset: 0.5, // 更新坐标的偏移值 g6会将更新的坐标数值 - 0.5
@@ -68,9 +67,9 @@ G6.registerBehavior('flow-block-event', {
 
     this.onFlowBlockShapeClick(e)
 
-    if (name === UtilGroupChildrenName.DeleteShape) { // 删除按钮
+    if (name === UtilGroupChildrenName.DeleteShapeGroup) { // 删除按钮
       this.onDeleteShapeClick(e)
-    } else if (name === UtilGroupChildrenName.EditorShape) { // 编辑按钮
+    } else if (name === UtilGroupChildrenName.EditorShapeGroup) { // 编辑按钮
       this.onEditorShapeClick(e)
     }
   },
@@ -217,7 +216,7 @@ G6.registerBehavior('flow-block-event', {
 
     this.currentEdge = graph.addItem('edge', {
       id: Math.ceil(Math.random() * 1000) + '', // todo
-      type: 'sz-edge',
+      type: EdgeType,
       source: flowBlockId,
       sourceAnchor: anchorPointIndex,
       target: { x, y },
