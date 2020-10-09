@@ -1,5 +1,5 @@
 import G6 from '@antv/g6';
-import { ShapeName, AnchorPointType, inTypeAchorPoints, outTypeAchorPoints, EdgeStyleType, GroupName, UtilGroupChildrenName, EdgeType } from '../index.d.ts'
+import { ShapeName, inTypeAchorPoints, outTypeAchorPoints, EdgeStyleType, UtilGroupChildrenName, EdgeType } from '../index.d.ts'
 import { edgeShapeOptions ,textShapeOptions } from '../edge/options'
 
 G6.registerBehavior('flow-block-event', {

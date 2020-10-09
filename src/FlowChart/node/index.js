@@ -12,7 +12,6 @@ import {
   GroupName,
   ShapeName,
   UtilGroupChildrenName,
-  AnchorPointType,
   inTypeAchorPoints,
   outTypeAchorPoints
 } from '../index.d.ts'

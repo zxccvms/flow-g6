@@ -8,6 +8,24 @@ let data = {"nodes":[{"id":"io5cd","shape":"sz-task","x":140,"y":140,"output":""
 
 const grid = new Grid()
 
+// 兼容数据
+const handleData = (data): any => {
+  const result = Array.isArray(data) ? [] : {}
+  for (const key in data) {
+    const value = data[key]
+    if (typeof value === 'object') {
+      result[key] = handleData(value)
+    } else if (key !== 'shape') {
+      result[key] = value
+    } else {
+      result['type'] = value
+    }
+  }
+  return result
+}
+
+data = handleData(data)
+
 const FlowChart = () => {
   const graph = useRef(null)
 
