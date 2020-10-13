@@ -12,7 +12,6 @@ G6.registerBehavior('flow-block-event', {
   getEvents() {
     return {
       'afteradditem': 'onAfterAddNode',
-      // 'afterremoveitem': 'onAfterRemoveNode',
       'node:mousedown': 'onNodeDown',
       'mousemove': 'onMouseMove',
       'mouseup': 'onMouseUp',
@@ -22,20 +21,7 @@ G6.registerBehavior('flow-block-event', {
       'node:mouseout': 'onNodeMouseOut',
       'node:drag': 'onNodeDrag',
       'node:dragend': 'onNodeDragEnd',
-
-      'canvas:dblclick': 'onDbClick',
-
     };
-  },
-  onDbClick(e) {
-    // const { x, y } = e
-    // const graph = this.graph
-    // const node = graph.addItem('node', {
-    //   id: Math.ceil(Math.random() * 1000) + '',
-    //   type: 'sz-task',
-    //   x: x,
-    //   y: y
-    // })
   },
 
   onAfterAddNode({ item, model }) {
@@ -62,10 +48,12 @@ G6.registerBehavior('flow-block-event', {
     this.removeFlowBlockNodeSelectedState()
   },
   onNodeClick(e) {
-    const parent = e.target.getParent()
-    const { name } = parent.cfg
-
     this.onFlowBlockShapeClick(e)
+
+    const parent = e.target.getParent()
+    if (!parent) return
+    
+    const name = parent.get('name')
 
     if (name === UtilGroupChildrenName.DeleteShapeGroup) { // 删除按钮
       this.onDeleteShapeClick(e)
@@ -75,7 +63,7 @@ G6.registerBehavior('flow-block-event', {
   },
   onNodeMouseOver(e) {
     const parent = e.target.getParent()
-    const { name } = parent.cfg
+    const name = parent.get('name')
 
     this.onFlowBlockShapeMouseOver(e)
 
@@ -87,7 +75,7 @@ G6.registerBehavior('flow-block-event', {
   },
   onNodeMouseOut(e) {
     const parent = e.target.getParent()
-    const { name } = parent.cfg
+    const name = parent.get('name')
 
     this.onFlowBlockShapeMouseOut(e)
 
@@ -104,7 +92,8 @@ G6.registerBehavior('flow-block-event', {
   },
 
   onNodeDragEnd(e) {
-    this.removeGuideEdge()
+    this.removeGuideEdgeX()
+    this.removeGuideEdgeY()
   },
 
   /**
@@ -335,13 +324,14 @@ G6.registerBehavior('flow-block-event', {
     const { minX, minY, maxX, maxY, width, height } = item.getBBox()
 
     const triggerRange = {
-      x: 400, // 节点间触发吸附的距离x
-      y: 400, // 节点间触发吸附的距离y
+      x: 300, // 节点间触发引导线的距离x
+      y: 300, // 节点间触发引导线的距离y
       r: 10 // 吸附半径
     }
 
     const flowBlockNodes = graph.getNodes()
-    let flag = false
+    let flagX = false
+    let flagY = false
 
     for (const node of flowBlockNodes) {
       if (node.getModel().id === id) continue
@@ -358,77 +348,106 @@ G6.registerBehavior('flow-block-event', {
         y: minY - bBox.minY < 0 ? bBox.minY : bBox.maxY
       }
 
-      if(source.x - target.x > triggerRange.x || source.y - target.y > triggerRange.y ) continue
+      // 大于节点间触发引导线的距离
+      if (
+        Math.abs(source.x - target.x) > triggerRange.x ||
+        Math.abs(source.y - target.y) > triggerRange.y
+      ) continue
 
-      switch (true) {
-        case Math.abs(minX - bBox.minX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.minX + this.offset })
-          this.addGuideEdge({ x: bBox.minX, y: source.y }, { x: bBox.minX, y: target.y})
-          flag = true
-          break
+      // x轴引导线
+      if (!flagX) {
+        switch (true) {
+          case Math.abs(minX - bBox.minX) <= triggerRange.r: {
+            graph.updateItem(item, { x: bBox.minX + this.offset })
+            this.addGuideEdgeX({ x: bBox.minX, y: source.y }, { x: bBox.minX, y: target.y})
+            flagX = true
+            break
+          }
+          case Math.abs(minX - bBox.maxX) <= triggerRange.r: {
+            graph.updateItem(item, { x: bBox.maxX + this.offset })
+            this.addGuideEdgeX({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
+            flagX = true
+            break
+          }
+          case Math.abs(maxX - bBox.minX) <= triggerRange.r: {
+            graph.updateItem(item, { x: bBox.minX - width + this.offset })
+            this.addGuideEdgeX({x: bBox.minX, y: source.y}, {x: bBox.minX, y: target.y})
+            flagX = true
+            break
+          }
+          case Math.abs(maxX - bBox.maxX) <= triggerRange.r: {
+            graph.updateItem(item, { x: bBox.maxX - width + this.offset })
+            this.addGuideEdgeX({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
+            flagX = true
+            break
+          }
+          default: break
         }
-        case Math.abs(minX - bBox.maxX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.maxX + this.offset  })
-          this.addGuideEdge({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
-          flag = true
-          break
-        }
-        case Math.abs(maxX - bBox.minX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.minX - width + this.offset  })
-          this.addGuideEdge({x: bBox.minX, y: source.y}, {x: bBox.minX, y: target.y})
-          flag = true
-          break
-        }
-        case Math.abs(maxX - bBox.maxX) <= triggerRange.r: {
-          graph.updateItem(item, { x: bBox.maxX - width + this.offset  })
-          this.addGuideEdge({x: bBox.maxX, y: source.y}, {x: bBox.maxX, y: target.y})
-          flag = true
-          break
-        }
-        case Math.abs(minY - bBox.minY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.minY + this.offset  })
-          this.addGuideEdge({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
-          flag = true
-          break
-        }
-        case Math.abs(minY - bBox.maxY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.maxY + this.offset  })
-          this.addGuideEdge({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
-          flag = true
-          break
-        }
-        case Math.abs(maxY - bBox.minY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.minY - height + this.offset })
-          this.addGuideEdge({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
-          flag = true
-          break
-        }
-        case Math.abs(maxY - bBox.maxY) <= triggerRange.r: {
-          graph.updateItem(item, { y: bBox.maxY - height + this.offset })
-          this.addGuideEdge({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
-          flag = true
-          break
-        }
-        default: break
       }
 
-      if (flag) break
+      // y轴引导线
+      if (!flagY) {
+        switch (true) {
+          case Math.abs(minY - bBox.minY) <= triggerRange.r: {
+            graph.updateItem(item, { y: bBox.minY + this.offset })
+            this.addGuideEdgeY({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
+            flagY = true
+            break
+          }
+          case Math.abs(minY - bBox.maxY) <= triggerRange.r: {
+            graph.updateItem(item, { y: bBox.maxY + this.offset })
+            this.addGuideEdgeY({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
+            flagY = true
+            break
+          }
+          case Math.abs(maxY - bBox.minY) <= triggerRange.r: {
+            graph.updateItem(item, { y: bBox.minY - height + this.offset })
+            this.addGuideEdgeY({x: source.x, y: bBox.minY}, {x: target.x, y: bBox.minY})
+            flagY = true
+            break
+          }
+          case Math.abs(maxY - bBox.maxY) <= triggerRange.r: {
+            graph.updateItem(item, { y: bBox.maxY - height + this.offset })
+            this.addGuideEdgeY({x: source.x, y: bBox.maxY}, {x: target.x, y: bBox.maxY})
+            flagY = true
+            break
+          }
+          default: break
+        }
+      }
+
+      if (flagX && flagY) break
     }
     
-    if(!flag) this.removeGuideEdge()
+    if(!flagX) this.removeGuideEdgeX()
+    if(!flagY) this.removeGuideEdgeY()
   },
 
   // 添加引导线
-  addGuideEdge(source, target) {
-    const graph = this.graph
-
-    if (this.guideEdge) {
-      graph.removeItem(this.guideEdge)
+  addGuideEdgeX(source, target) {
+    if (this.guideEdgeX) {
+      return this.graph.updateItem(this.guideEdgeX, {source, target})
     }
 
-    const guideEdge = graph.addItem('edge', {
-      id: Math.ceil(Math.random() * 1000) + '',
-      type: 'line',
+    const guideEdge = this.createGuideEdge(source, target)
+
+    this.guideEdgeX = guideEdge
+  },
+
+  addGuideEdgeY(source, target) {
+    if (this.guideEdgeY) {
+      return this.graph.updateItem(this.guideEdgeY, {source, target})
+    }
+
+    const guideEdge = this.createGuideEdge(source, target)
+
+    this.guideEdgeY = guideEdge
+  },
+
+  createGuideEdge(source, target) {
+    return this.graph.addItem('edge', {
+      id: Math.ceil(Math.random() * 1000) + '', // todo
+      shape: 'line',
       source,
       target,
       style: {
@@ -436,15 +455,19 @@ G6.registerBehavior('flow-block-event', {
         lineDash: [4,2],
       }
     })
-
-    this.guideEdge = guideEdge
   },
 
   // 移除引导线
-  removeGuideEdge() {
-    if (this.guideEdge) {
-      this.graph.removeItem(this.guideEdge)
+  removeGuideEdgeX() {
+    if (this.guideEdgeX) {
+      this.graph.removeItem(this.guideEdgeX)
+      this.guideEdgeX = null
     }
-    this.guideEdge = null
+  },
+  removeGuideEdgeY() {
+    if (this.guideEdgeY) {
+      this.graph.removeItem(this.guideEdgeY)
+      this.guideEdgeY = null
+    }
   },
 });
